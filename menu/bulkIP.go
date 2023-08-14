@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 func GenIP() {
@@ -32,24 +34,24 @@ func GenIP() {
 			fmt.Println("Please enter a valid IP address.")
 			continue
 		}
-		count := 0
 		totalIps := CountTotalIPs(startIP, endIP)
+		bar := pb.Full.Start(totalIps)
+
 		for ip := startIP; ip != nil && bytesCompare(ip, endIP) <= 0; ip = incrementIP(ip) {
-			count++
-			fmt.Printf("\rGenerated IP count: %d out of %d", count, totalIps)
 			ipStr := ip.String() + "\n"
 			_, err := file.WriteString(ipStr)
 			if err != nil {
 				fmt.Println("Error writing to file:", err)
 				return
 			}
-			time.Sleep(time.Microsecond)
+			time.Sleep(time.Millisecond)
+			bar.Increment()
 		}
+		bar.Finish()
 		return
 	}
 	fmt.Println("You haved exceeded the try limit!")
 	os.Exit(1)
-
 }
 
 func CountTotalIPs(startIP, endIP net.IP) int {

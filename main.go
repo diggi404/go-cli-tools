@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/fatih/color"
-
 	"github.com/eiannone/keyboard"
 )
 
@@ -22,7 +20,7 @@ func main() {
 	}
 
 	for {
-		printMenu(options, selectedIndex)
+		menu.PrintMenu(options, selectedIndex)
 
 		_, key, err := keyboard.GetKey()
 		if err != nil {
@@ -46,21 +44,10 @@ func main() {
 	}
 	if selectedOption == 0 {
 		menu.GenIP()
-		os.Exit(0)
+		var scanOption string
+		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
+		fmt.Scanln(&scanOption)
+		menu.Selections(scanOption)
 	}
 	fmt.Printf("selectedOption: %v\n", selectedOption)
-
-}
-
-func printMenu(items []string, selectedIndex int) {
-	fmt.Print("\033[H\033[2J")
-	fmt.Println("Select an option using the arrow keys (Up/Down) and press Enter:")
-	red := color.New(color.BgRed).PrintfFunc()
-	for i, item := range items {
-		if i == selectedIndex {
-			red("* %s\n", item)
-		} else {
-			fmt.Printf("  %s\n", item)
-		}
-	}
 }
