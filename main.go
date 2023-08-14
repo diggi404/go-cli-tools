@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go_cli/menu"
 	"log"
 	"os"
 
@@ -19,7 +20,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer keyboard.Close()
 
 	for {
 		printMenu(options, selectedIndex)
@@ -35,6 +35,7 @@ func main() {
 				os.Exit(0)
 			} else {
 				selectedOption = selectedIndex
+				keyboard.Close()
 				break
 			}
 		} else if key == keyboard.KeyArrowUp {
@@ -43,7 +44,12 @@ func main() {
 			selectedIndex = (selectedIndex + 1) % len(options)
 		}
 	}
+	if selectedOption == 0 {
+		menu.GenIP()
+		os.Exit(0)
+	}
 	fmt.Printf("selectedOption: %v\n", selectedOption)
+
 }
 
 func printMenu(items []string, selectedIndex int) {
