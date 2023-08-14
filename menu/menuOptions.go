@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
 )
 
 func PrintMenu(items []string, selectedIndex int) {
@@ -22,28 +23,30 @@ func PrintMenu(items []string, selectedIndex int) {
 }
 
 func MenuSelection(selectedOption int) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"IP Address", "Open Ports"})
 	if selectedOption == 0 {
 		filePath, err := GenIP()
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
-			AfterGenIP("", "")
+			AfterGenIP("", "", table)
 		}
 		var input string
 		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
 		fmt.Scanln(&input)
-		AfterGenIP(input, filePath)
+		AfterGenIP(input, filePath, table)
 	} else if selectedOption == 1 {
-		ScanIPs()
+		ScanIPs(table)
 	} else if selectedOption == 2 {
 		SmtpCrack()
 	}
 	os.Exit(0)
 }
 
-func AfterGenIP(choice, filePath string) {
+func AfterGenIP(choice, filePath string, table *tablewriter.Table) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
-		ScanIPs(filePath)
+		ScanIPs(table, filePath)
 		os.Exit(0)
 	}
 	fmt.Print("\n")
@@ -54,7 +57,7 @@ func AfterGenIP(choice, filePath string) {
 	case 1:
 		GenIP()
 	case 2:
-		ScanIPs()
+		ScanIPs(table)
 	case 3:
 		SmtpCrack()
 	case 4:
