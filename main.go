@@ -42,12 +42,6 @@ func main() {
 			selectedIndex = (selectedIndex + 1) % len(options)
 		}
 	}
-	if selectedOption == 0 {
-		menu.GenIP()
-		var scanOption string
-		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
-		fmt.Scanln(&scanOption)
-		menu.Selections(scanOption)
-	}
+	menu.MenuSelection(selectedOption)
 	fmt.Printf("selectedOption: %v\n", selectedOption)
 }

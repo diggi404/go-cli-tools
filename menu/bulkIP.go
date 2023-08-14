@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -11,12 +12,18 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-func GenIP() {
+func GenIP() (string, error) {
 	for attemtps := 0; attemtps < 3; attemtps++ {
-		file, err := os.Create("generated_ips.txt")
+		dirPath, err := checkDir()
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return "", err
+		}
+		filePath := dirPath + "/generated_ips.txt"
+		file, err := os.Create(filePath)
 		if err != nil {
 			fmt.Println("Error creating file:", err)
-			return
+			return "", err
 		}
 		defer file.Close()
 		var ip1, ip2 string
@@ -42,16 +49,38 @@ func GenIP() {
 			_, err := file.WriteString(ipStr)
 			if err != nil {
 				fmt.Println("Error writing to file:", err)
-				return
+				return "", err
 			}
 			time.Sleep(time.Millisecond)
 			bar.Increment()
 		}
 		bar.Finish()
-		return
+		fmt.Print("\n")
+		return filePath, nil
 	}
 	fmt.Println("You haved exceeded the try limit!")
-	os.Exit(1)
+	err := errors.New("you haved exceeded the try limit")
+	return "", err
+}
+
+func checkDir() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return "", err
+	}
+	dirPath := cwd + "/ip_list"
+	_, err = os.Stat(dirPath)
+	if err == nil {
+		return dirPath, nil
+	} else if os.IsNotExist(err) {
+		err := os.Mkdir(dirPath, 0755)
+		if err != nil {
+			return "", err
+		}
+		return dirPath, nil
+	}
+	return "", err
 }
 
 func CountTotalIPs(startIP, endIP net.IP) int {

@@ -14,19 +14,39 @@ func PrintMenu(items []string, selectedIndex int) {
 	red := color.New(color.BgRed).PrintfFunc()
 	for i, item := range items {
 		if i == selectedIndex {
-			red("> %s\n", item)
+			red("* %s\n", item)
 		} else {
 			fmt.Printf("%d  %s\n", i+1, item)
 		}
 	}
 }
 
-func Selections(choice string) {
+func MenuSelection(selectedOption int) {
+	if selectedOption == 0 {
+		filePath, err := GenIP()
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			AfterGenIP("", "")
+		}
+		var input string
+		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
+		fmt.Scanln(&input)
+		AfterGenIP(input, filePath)
+	} else if selectedOption == 1 {
+		ScanIPs()
+	} else if selectedOption == 2 {
+		SmtpCrack()
+	}
+	os.Exit(0)
+}
+
+func AfterGenIP(choice, filePath string) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
-		ScanIPs()
+		ScanIPs(filePath)
 		os.Exit(0)
 	}
+	fmt.Print("\n")
 	var selectedOption int
 	fmt.Print("Enter a menu option :> ")
 	fmt.Scanln(&selectedOption)
