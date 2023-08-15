@@ -16,7 +16,7 @@ func ScanIPs(filePath ...string) {
 	var (
 		user_port      string
 		filtered_ports []string
-		timeout        time.Duration
+		timeout        int
 	)
 	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 25,587,465")
 	fmt.Print(">>>> ")
@@ -41,23 +41,24 @@ func ScanIPs(filePath ...string) {
 		}
 		filePath = append(filePath, fileName)
 	}
-	ips, err := readIPsFromFile(filePath[0])
+	ips, err := ReadIPsFromFile(filePath[0])
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 	red := color.New(color.FgRed).PrintlnFunc()
-	red("IP Address\tOpen Ports\tService")
-	red("------------------------------------------")
+	red("IP Address\tOpen Ports\tService     Start\tEnd Time")
+	red("----------------------------------------------------------------------------------")
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	var port_services []string
 	var results []string
+	port_timeout := time.Second * time.Duration(timeout)
 
 	for _, ip := range ips {
 		wg.Add(1)
-		go checkPorts(ip, filtered_ports, &mutex, &wg, timeout, port_services, &results)
+		go checkPorts(ip, filtered_ports, &mutex, &wg, &port_timeout, port_services, &results)
 	}
 
 	wg.Wait()
@@ -65,7 +66,7 @@ func ScanIPs(filePath ...string) {
 	fmt.Println("All checks completed.")
 }
 
-func readIPsFromFile(fileName string) ([]string, error) {
+func ReadIPsFromFile(fileName string) ([]string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
@@ -85,14 +86,18 @@ func readIPsFromFile(fileName string) ([]string, error) {
 	return ips, nil
 }
 
-func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout time.Duration, port_services []string, results *[]string, open_ports ...string) {
+func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, port_services []string, results *[]string, open_ports ...string) {
 	defer wg.Done()
-	if timeout == 0 {
-		timeout = 1
+	if *timeout == 0 {
+		*timeout = time.Second * 1
 	}
+	start := time.Now()
+	start_hour := start.Hour()
+	start_min := start.Minute()
+	start_sec := start.Second()
 	for _, port := range ports {
 		address := fmt.Sprintf("%s:%s", ip, port)
-		conn, err := net.DialTimeout("tcp", address, time.Second*timeout)
+		conn, err := net.DialTimeout("tcp", address, *timeout)
 		if err == nil {
 			open_ports = append(open_ports, port)
 			serviceInfo, _ := getServiceInfo(conn)
@@ -107,13 +112,17 @@ func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup
 	open_port_str := fmt.Sprintf("%v", open_ports)
 	port_service_str := fmt.Sprintf("%v", port_services)
 	green := color.New(color.FgGreen).PrintfFunc()
+	end := time.Now()
+	end_hour := end.Hour()
+	end_min := end.Minute()
+	end_sec := end.Second()
+	startTime := fmt.Sprintf("%d:%d:%d", start_hour, start_min, start_sec)
+	endTime := fmt.Sprintf("%d:%d:%d", end_hour, end_min, end_sec)
 	mutex.Lock()
 	defer mutex.Unlock()
-	green("%s\t%s\t%s\n", ip, open_port_str, port_service_str)
-
+	green("%s\t%s\t%s\t%s\t%s\n", ip, open_port_str, port_service_str, startTime, endTime)
 	ip_data := fmt.Sprintf("%s\t%s\t%s\n", ip, open_port_str, port_service_str)
 	*results = append(*results, ip_data)
-
 }
 
 func writeToFile(results []string) {
@@ -150,10 +159,9 @@ func getServiceInfo(conn net.Conn) (string, error) {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 			return "Timeout", err
 		} else {
-			return "", err
+			return "Timeout", err
 		}
 	}
-	// Process the received data
 	data := string(buffer[:n])
 	return data, nil
 }

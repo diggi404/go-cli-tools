@@ -14,18 +14,6 @@ import (
 
 func GenIP() (string, error) {
 	for attemtps := 0; attemtps < 3; attemtps++ {
-		dirPath, err := checkDir()
-		if err != nil {
-			fmt.Printf("err: %v\n", err)
-			return "", err
-		}
-		filePath := dirPath + "/generated_ips.txt"
-		file, err := os.Create(filePath)
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-			return "", err
-		}
-		defer file.Close()
 		var ip1, ip2 string
 		fmt.Print("Enter the starting IP: ")
 		fmt.Scanln(&ip1)
@@ -43,6 +31,18 @@ func GenIP() (string, error) {
 		}
 		totalIps := CountTotalIPs(startIP, endIP)
 		bar := pb.Full.Start(totalIps)
+		dirPath, err := checkDir()
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return "", err
+		}
+		filePath := dirPath + "/generated_ips.txt"
+		file, err := os.Create(filePath)
+		if err != nil {
+			fmt.Println("Error creating file:", err)
+			return "", err
+		}
+		defer file.Close()
 
 		for ip := startIP; ip != nil && bytesCompare(ip, endIP) <= 0; ip = incrementIP(ip) {
 			ipStr := ip.String() + "\n"
