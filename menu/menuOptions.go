@@ -36,7 +36,7 @@ func MenuSelection(selectedOption int) {
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath, table)
 	} else if selectedOption == 1 {
-		ScanIPs(table)
+		ScanIPs()
 	} else if selectedOption == 2 {
 		SmtpCrack()
 	}
@@ -46,7 +46,7 @@ func MenuSelection(selectedOption int) {
 func AfterGenIP(choice, filePath string, table *tablewriter.Table) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
-		ScanIPs(table, filePath)
+		ScanIPs(filePath)
 		os.Exit(0)
 	}
 	fmt.Print("\n")
@@ -57,7 +57,7 @@ func AfterGenIP(choice, filePath string, table *tablewriter.Table) {
 	case 1:
 		GenIP()
 	case 2:
-		ScanIPs(table)
+		ScanIPs()
 	case 3:
 		SmtpCrack()
 	case 4:

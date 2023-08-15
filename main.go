@@ -1,47 +1,47 @@
 package main
 
-// import (
-// 	"fmt"
-// 	"go_cli/menu"
-// 	"log"
-// 	"os"
+import (
+	"fmt"
+	"go_cli/menu"
+	"log"
+	"os"
 
-// 	"github.com/eiannone/keyboard"
-// )
+	"github.com/eiannone/keyboard"
+)
 
-// func main() {
-// 	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "SMTP Cracker", "Exit"}
-// 	selectedIndex := 0
-// 	var selectedOption int
+func main() {
+	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "SMTP Cracker", "Exit"}
+	selectedIndex := 0
+	var selectedOption int
 
-// 	err := keyboard.Open()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	err := keyboard.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	for {
-// 		menu.PrintMenu(options, selectedIndex)
+	for {
+		menu.PrintMenu(options, selectedIndex)
 
-// 		_, key, err := keyboard.GetKey()
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
+		_, key, err := keyboard.GetKey()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-// 		if key == keyboard.KeyEnter {
-// 			if selectedIndex == len(options)-1 {
-// 				fmt.Println("Exiting Program...")
-// 				os.Exit(0)
-// 			} else {
-// 				selectedOption = selectedIndex
-// 				keyboard.Close()
-// 				break
-// 			}
-// 		} else if key == keyboard.KeyArrowUp {
-// 			selectedIndex = (selectedIndex - 1 + len(options)) % len(options)
-// 		} else if key == keyboard.KeyArrowDown {
-// 			selectedIndex = (selectedIndex + 1) % len(options)
-// 		}
-// 	}
-// 	menu.MenuSelection(selectedOption)
-// 	fmt.Printf("selectedOption: %v\n", selectedOption)
-// }
+		if key == keyboard.KeyEnter {
+			if selectedIndex == len(options)-1 {
+				fmt.Println("Exiting Program...")
+				os.Exit(0)
+			} else {
+				selectedOption = selectedIndex
+				keyboard.Close()
+				break
+			}
+		} else if key == keyboard.KeyArrowUp {
+			selectedIndex = (selectedIndex - 1 + len(options)) % len(options)
+		} else if key == keyboard.KeyArrowDown {
+			selectedIndex = (selectedIndex + 1) % len(options)
+		}
+	}
+	menu.MenuSelection(selectedOption)
+	fmt.Printf("selectedOption: %v\n", selectedOption)
+}
