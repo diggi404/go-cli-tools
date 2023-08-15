@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/ncruces/zenity"
 )
 
@@ -45,18 +46,22 @@ func ScanIPs(filePath ...string) {
 		fmt.Println("Error:", err)
 		return
 	}
-
-	fmt.Println("IP Address\tOpen Ports")
-	fmt.Println("-------------------------------------")
+	red := color.New(color.FgRed).PrintlnFunc()
+	red("IP Address\tOpen Ports\tService")
+	red("------------------------------------------")
 
 	var wg sync.WaitGroup
+	var mutex sync.Mutex
+	var port_services []string
+	var results []string
 
 	for _, ip := range ips {
 		wg.Add(1)
-		go checkPorts(ip, filtered_ports, &wg, timeout)
+		go checkPorts(ip, filtered_ports, &mutex, &wg, timeout, port_services, &results)
 	}
 
 	wg.Wait()
+	writeToFile(results)
 	fmt.Println("All checks completed.")
 }
 
@@ -80,7 +85,7 @@ func readIPsFromFile(fileName string) ([]string, error) {
 	return ips, nil
 }
 
-func checkPorts(ip string, ports []string, wg *sync.WaitGroup, timeout time.Duration, open_ports ...string) {
+func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout time.Duration, port_services []string, results *[]string, open_ports ...string) {
 	defer wg.Done()
 	if timeout == 0 {
 		timeout = 1
@@ -90,17 +95,30 @@ func checkPorts(ip string, ports []string, wg *sync.WaitGroup, timeout time.Dura
 		conn, err := net.DialTimeout("tcp", address, time.Second*timeout)
 		if err == nil {
 			open_ports = append(open_ports, port)
+			serviceInfo, _ := getServiceInfo(conn)
+			sanitizedServiceInfo := sanitizeServiceInfo(serviceInfo)
+			port_services = append(port_services, sanitizedServiceInfo)
 			conn.Close()
 		}
 	}
 	if len(open_ports) == 0 {
 		return
 	}
-	openPortsStr := fmt.Sprintf("%v", open_ports)
-	fmt.Printf("%s\t%s\n", ip, openPortsStr)
+	open_port_str := fmt.Sprintf("%v", open_ports)
+	port_service_str := fmt.Sprintf("%v", port_services)
+	green := color.New(color.FgGreen).PrintfFunc()
+	mutex.Lock()
+	defer mutex.Unlock()
+	green("%s\t%s\t%s\n", ip, open_port_str, port_service_str)
+
+	ip_data := fmt.Sprintf("%s\t%s\t%s\n", ip, open_port_str, port_service_str)
+	*results = append(*results, ip_data)
+
+}
+
+func writeToFile(results []string) {
 	dirPath, err := setupDir()
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return
 	}
 	filePath := dirPath + "/scanned_ips.txt"
@@ -110,13 +128,34 @@ func checkPorts(ip string, ports []string, wg *sync.WaitGroup, timeout time.Dura
 		return
 	}
 	defer file.Close()
-	ip_data := fmt.Sprintf("%s\t%s\n", ip, openPortsStr)
-	_, err = file.WriteString(ip_data)
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		return
+	for _, result := range results {
+		_, err = file.WriteString(result)
+		if err != nil {
+			return
+		}
 	}
+}
 
+func sanitizeServiceInfo(serviceInfo string) string {
+	sanitized := strings.ReplaceAll(serviceInfo, "\n", " ")
+	sanitized = strings.TrimSpace(sanitized)
+	return sanitized
+}
+
+func getServiceInfo(conn net.Conn) (string, error) {
+	conn.SetReadDeadline(time.Now().Add(time.Second * 2))
+	buffer := make([]byte, 1024)
+	n, err := conn.Read(buffer)
+	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return "Timeout", err
+		} else {
+			return "", err
+		}
+	}
+	// Process the received data
+	data := string(buffer[:n])
+	return data, nil
 }
 
 func setupDir() (string, error) {
