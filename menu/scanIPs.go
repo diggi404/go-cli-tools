@@ -12,17 +12,21 @@ import (
 	"github.com/ncruces/zenity"
 )
 
+// Main function for scanning Bulk IPs.
 func ScanIPs(filePath ...string) {
 	var (
 		user_port      string
 		filtered_ports []string
 		timeout        int
 	)
+
+	// take and filter inputs.
 	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 25,587,465")
 	fmt.Print(">>>> ")
 	fmt.Scanln(&user_port)
 	fmt.Print("Enter the timeout in seconds (Default is 1 second) :> ")
 	fmt.Scanln(&timeout)
+
 	user_port = strings.TrimSpace(user_port)
 	ports := strings.Split(user_port, ",")
 	for _, v := range ports {
@@ -30,6 +34,8 @@ func ScanIPs(filePath ...string) {
 			filtered_ports = append(filtered_ports, v)
 		}
 	}
+
+	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
 		fmt.Println("Select your file: ")
 		fileName, err := zenity.SelectFile(
@@ -41,6 +47,8 @@ func ScanIPs(filePath ...string) {
 		}
 		filePath = append(filePath, fileName)
 	}
+
+	// continuation for both selection from main menu and after generating bulk ips
 	ips, err := ReadIPsFromFile(filePath[0])
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -56,16 +64,19 @@ func ScanIPs(filePath ...string) {
 	var results []string
 	port_timeout := time.Second * time.Duration(timeout)
 
+	// spawn same number of goroutines as IPs for scanning the ports.
 	for _, ip := range ips {
 		wg.Add(1)
 		go checkPorts(ip, filtered_ports, &mutex, &wg, &port_timeout, port_services, &results)
 	}
 
+	// wait for all goroutines to finish...
 	wg.Wait()
 	writeToFile(results)
 	fmt.Println("All checks completed.")
 }
 
+// This reads all the IPs from the path passed to it.
 func ReadIPsFromFile(fileName string) ([]string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -86,15 +97,19 @@ func ReadIPsFromFile(fileName string) ([]string, error) {
 	return ips, nil
 }
 
+// Main function for scanning the ports received by the user.
 func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, port_services []string, results *[]string, open_ports ...string) {
 	defer wg.Done()
+
 	if *timeout == 0 {
 		*timeout = time.Second * 1
 	}
+
 	start := time.Now()
 	start_hour := start.Hour()
 	start_min := start.Minute()
 	start_sec := start.Second()
+
 	for _, port := range ports {
 		address := fmt.Sprintf("%s:%s", ip, port)
 		conn, err := net.DialTimeout("tcp", address, *timeout)
@@ -112,15 +127,19 @@ func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup
 	open_port_str := fmt.Sprintf("%v", open_ports)
 	port_service_str := fmt.Sprintf("%v", port_services)
 	green := color.New(color.FgGreen).PrintfFunc()
+
 	end := time.Now()
 	end_hour := end.Hour()
 	end_min := end.Minute()
 	end_sec := end.Second()
 	startTime := fmt.Sprintf("%d:%d:%d", start_hour, start_min, start_sec)
 	endTime := fmt.Sprintf("%d:%d:%d", end_hour, end_min, end_sec)
+
+	// use mutex to lock shared resource for better synchronization between goroutines.
 	mutex.Lock()
 	defer mutex.Unlock()
 	green("%s\t%s\t%s\t%s\t%s\n", ip, open_port_str, port_service_str, startTime, endTime)
+
 	ip_data := fmt.Sprintf("%s\t%s\t%s\n", ip, open_port_str, port_service_str)
 	*results = append(*results, ip_data)
 }
@@ -145,12 +164,14 @@ func writeToFile(results []string) {
 	}
 }
 
+// clear the port service info off any newline characters.
 func sanitizeServiceInfo(serviceInfo string) string {
 	sanitized := strings.ReplaceAll(serviceInfo, "\n", " ")
 	sanitized = strings.TrimSpace(sanitized)
 	return sanitized
 }
 
+// get the services running on each port connection created.
 func getServiceInfo(conn net.Conn) (string, error) {
 	conn.SetReadDeadline(time.Now().Add(time.Second * 2))
 	buffer := make([]byte, 1024)
@@ -166,6 +187,7 @@ func getServiceInfo(conn net.Conn) (string, error) {
 	return data, nil
 }
 
+// initialize the default directory path for keeping results of scanned IPs
 func setupDir() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {

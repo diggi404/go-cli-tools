@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 )
 
+// Main Menu Function... CLears the terminal before printing the Menu.
 func PrintMenu(items []string, selectedIndex int) {
 	fmt.Print("\033[H\033[2J")
 	fmt.Println("Select an option using the arrow keys (Up/Down) and press Enter:")
@@ -22,19 +22,18 @@ func PrintMenu(items []string, selectedIndex int) {
 	}
 }
 
+// Handles user's selection from the Main Menu i.e. When the app is launched.
 func MenuSelection(selectedOption int) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"IP Address", "Open Ports"})
 	if selectedOption == 0 {
 		filePath, err := GenIP()
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
-			AfterGenIP("", "", table)
+			AfterGenIP("", "")
 		}
 		var input string
 		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
 		fmt.Scanln(&input)
-		AfterGenIP(input, filePath, table)
+		AfterGenIP(input, filePath)
 	} else if selectedOption == 1 {
 		ScanIPs()
 	} else if selectedOption == 2 {
@@ -43,7 +42,8 @@ func MenuSelection(selectedOption int) {
 	os.Exit(0)
 }
 
-func AfterGenIP(choice, filePath string, table *tablewriter.Table) {
+// This function handles user selection right after generating bulk IPs.
+func AfterGenIP(choice, filePath string) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
 		ScanIPs(filePath)
