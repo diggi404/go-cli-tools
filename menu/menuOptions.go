@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// Main Menu Function... CLears the terminal before printing the Menu.
+// PrintMenu Main Menu Function... CLears the terminal before printing the Menu.
 func PrintMenu(items []string, selectedIndex int) {
 	fmt.Print("\033[H\033[2J")
 	fmt.Println("Select an option using the arrow keys (Up/Down) and press Enter:")
@@ -22,7 +22,7 @@ func PrintMenu(items []string, selectedIndex int) {
 	}
 }
 
-// Handles user's selection from the Main Menu i.e. When the app is launched.
+// MenuSelection Handles user's selection from the Main Menu i.e. When the app is launched.
 func MenuSelection(selectedOption int) {
 	if selectedOption == 0 {
 		filePath, err := GenIP()
@@ -42,7 +42,7 @@ func MenuSelection(selectedOption int) {
 	os.Exit(0)
 }
 
-// This function handles user selection right after generating bulk IPs.
+// AfterGenIP This function handles user selection right after generating bulk IPs.
 func AfterGenIP(choice, filePath string) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {

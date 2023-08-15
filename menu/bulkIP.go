@@ -12,9 +12,9 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-// main function to generate the bulk IPs.
+// GenIP main function to generate the bulk IPs.
 func GenIP() (string, error) {
-	for attemtps := 0; attemtps < 3; attemtps++ {
+	for attempts := 0; attempts < 3; attempts++ {
 		var ip1, ip2 string
 		fmt.Print("Enter the starting IP: ")
 		fmt.Scanln(&ip1)
@@ -64,12 +64,12 @@ func GenIP() (string, error) {
 		fmt.Print("\n")
 		return filePath, nil
 	}
-	fmt.Println("You haved exceeded the try limit!")
-	err := errors.New("you haved exceeded the try limit")
+	fmt.Println("You have exceeded the try limit!")
+	err := errors.New("you have exceeded the try limit")
 	return "", err
 }
 
-// This function checks if the default directory of the application is avaliable and if not it makes a new dir.
+// This function checks if the default directory of the application is available and if not it makes a new dir.
 func checkDir() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -90,7 +90,7 @@ func checkDir() (string, error) {
 	return "", err
 }
 
-// Calculate the total number of IPs that can be generated within the given range;
+// CountTotalIPs Calculate the total number of IPs that can be generated within the given range;
 // This is used or the cli progress bar.
 func CountTotalIPs(startIP, endIP net.IP) int {
 	start := IpToInt(startIP)
@@ -98,7 +98,7 @@ func CountTotalIPs(startIP, endIP net.IP) int {
 	return end - start + 1
 }
 
-// This will convert an IP address[byte] into it's full integer value;
+// IpToInt This will convert an IP address[byte] into it's full integer value;
 // Used in the CountTotalIPs function to calc the number of IPs within a range.
 func IpToInt(ip net.IP) int {
 	octets := strings.Split(ip.String(), ".")
