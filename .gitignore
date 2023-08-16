@@ -6,3 +6,4 @@ test.go
 generated_ips.txt
 ip_scans
 ip_list
+.idea

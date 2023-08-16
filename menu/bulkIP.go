@@ -57,7 +57,7 @@ func GenIP() (string, error) {
 				fmt.Println("Error writing to file:", err)
 				return "", err
 			}
-			time.Sleep(time.Millisecond)
+			time.Sleep(time.Microsecond)
 			bar.Increment()
 		}
 		bar.Finish()

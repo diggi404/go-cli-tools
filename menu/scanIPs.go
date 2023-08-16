@@ -65,10 +65,36 @@ func ScanIPs(filePath ...string) {
 	var results []string
 	portTimeout := time.Second * time.Duration(timeout)
 
-	// spawn same number of goroutines as IPs for scanning the ports.
-	for _, ip := range ips {
-		wg.Add(1)
-		go checkPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, &results)
+	if len(ips) > 1000 {
+
+		maxGoroutines := 1000
+		chunkSize := len(ips) / maxGoroutines
+
+		if len(ips)%maxGoroutines != 0 {
+			chunkSize++
+		}
+		ipChuncks := make(chan []string, chunkSize)
+
+		for i := 0; i < maxGoroutines; i++ {
+			wg.Add(1)
+			go checkPorts2(ipChuncks, filteredPorts, &mutex, &wg, &portTimeout, &results)
+		}
+
+		for i := 0; i < len(ips); i += chunkSize {
+			end := i + chunkSize
+			if end > len(ips) {
+				end = len(ips)
+			}
+			ipChuncks <- ips[i:end]
+		}
+
+		close(ipChuncks)
+	} else {
+		// spawn same number of goroutines as IPs for scanning the ports.
+		for _, ip := range ips {
+			wg.Add(1)
+			go checkPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, &results)
+		}
 	}
 
 	// wait for all goroutines to finish...
@@ -76,6 +102,70 @@ func ScanIPs(filePath ...string) {
 	writeToFile(results)
 	fmt.Println("All checks completed.")
 }
+
+func checkPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, results *[]string, validIPs ...string) {
+	defer wg.Done()
+
+	if *timeout == 0 {
+		*timeout = time.Second * 1
+	}
+
+	ipsChunk := <-ipChunks
+
+	for _, ip := range ipsChunk {
+		var openPorts []string
+		var portServices []string
+
+		for _, port := range ports {
+			address := fmt.Sprintf("%s:%s", ip, port)
+			conn, err := net.DialTimeout("tcp", address, *timeout)
+			if err == nil {
+				openPorts = append(openPorts, port)
+				serviceInfo, _ := getServiceInfo(conn)
+				sanitizedServiceInfo := sanitizeServiceInfo(serviceInfo)
+				portServices = append(portServices, sanitizedServiceInfo)
+				conn.Close()
+				// resultFormat := fmt.Sprintf("%s\t%s\t%s\n", ip, port, sanitizedServiceInfo)
+				// validIPs = append(validIPs, resultFormat)
+			}
+		}
+		if len(openPorts) != 0 {
+			resultFormat := fmt.Sprintf("%s\t%s\t%s\n", ip, openPorts, portServices)
+			validIPs = append(validIPs, resultFormat)
+		}
+	}
+	if len(validIPs) == 0 {
+		return
+	}
+
+	// use mutex to lock shared resource for better synchronization between goroutines.
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	green := color.New(color.FgGreen).PrintfFunc()
+	for _, result := range validIPs {
+		green(result)
+	}
+	*results = append(*results, validIPs...)
+}
+
+// func startTime() string {
+// 	start := time.Now()
+// 	startHour := start.Hour()
+// 	startMin := start.Minute()
+// 	startSec := start.Second()
+// 	startTime := fmt.Sprintf("%d:%d:%d", startHour, startMin, startSec)
+// 	return startTime
+// }
+
+// func endTime() string {
+// 	end := time.Now()
+// 	endHour := end.Hour()
+// 	endMin := end.Minute()
+// 	endSec := end.Second()
+// 	endTime := fmt.Sprintf("%d:%d:%d", endHour, endMin, endSec)
+// 	return endTime
+// }
 
 // ReadIPsFromFile This reads all the IPs from the path passed to it.
 func ReadIPsFromFile(fileName string) ([]string, error) {
@@ -102,14 +192,14 @@ func ReadIPsFromFile(fileName string) ([]string, error) {
 func checkPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, portServices []string, results *[]string, openPorts ...string) {
 	defer wg.Done()
 
-	if *timeout == 0 {
-		*timeout = time.Second * 1
-	}
-
 	start := time.Now()
 	startHour := start.Hour()
 	startMin := start.Minute()
 	startSec := start.Second()
+
+	if *timeout == 0 {
+		*timeout = time.Second * 1
+	}
 
 	for _, port := range ports {
 		address := fmt.Sprintf("%s:%s", ip, port)
@@ -180,6 +270,8 @@ func getServiceInfo(conn net.Conn) (string, error) {
 	if err != nil {
 		var netErr net.Error
 		if errors.As(err, &netErr) && netErr.Timeout() {
+			return "Timeout", err
+		} else {
 			return "Timeout", err
 		}
 	}
