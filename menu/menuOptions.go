@@ -2,6 +2,7 @@ package menu
 
 import (
 	"fmt"
+	menu "go_cli/menu/scanIPs"
 	"os"
 	"strings"
 
@@ -35,7 +36,7 @@ func MenuSelection(selectedOption int) {
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath)
 	} else if selectedOption == 1 {
-		ScanIPs()
+		menu.ScanIPs()
 	} else if selectedOption == 2 {
 		SmtpCrack()
 	}
@@ -46,7 +47,7 @@ func MenuSelection(selectedOption int) {
 func AfterGenIP(choice, filePath string) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
-		ScanIPs(filePath)
+		menu.ScanIPs(filePath)
 		os.Exit(0)
 	}
 	fmt.Print("\n")
@@ -57,7 +58,7 @@ func AfterGenIP(choice, filePath string) {
 	case 1:
 		GenIP()
 	case 2:
-		ScanIPs()
+		menu.ScanIPs()
 	case 3:
 		SmtpCrack()
 	case 4:
