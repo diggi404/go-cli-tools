@@ -13,9 +13,10 @@ func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg
 	defer wg.Done()
 
 	if *timeout == 0 {
-		*timeout = time.Second * 1
+		*timeout = time.Second * 10
 	}
 
+	// get pushed data to channel at a go.
 	ipsChunk := <-ipChunks
 
 	for _, ip := range ipsChunk {

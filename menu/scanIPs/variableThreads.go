@@ -9,12 +9,12 @@ import (
 	"github.com/fatih/color"
 )
 
-// Main function for scanning the ports received by the user.
+// CheckPorts Main function for scanning the ports received by the user.
 func CheckPorts(ip string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, portServices []string, results *[]string, openPorts ...string) {
 	defer wg.Done()
 
 	if *timeout == 0 {
-		*timeout = time.Second * 1
+		*timeout = time.Second * 10
 	}
 
 	start := StartTime()

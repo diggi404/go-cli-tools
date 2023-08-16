@@ -19,12 +19,13 @@ func ScanIPs(filePath ...string) {
 	)
 
 	// take and filter inputs.
-	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 25,587,465")
+	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 22,3389,2083")
 	fmt.Print(">>>> ")
 	fmt.Scanln(&userPort)
-	fmt.Print("Enter the timeout in seconds (Default is 1 second) :> ")
+	fmt.Print("Enter the timeout in seconds (Default = 10s) :> ")
 	fmt.Scanln(&timeout)
 
+	// filter all entered ports
 	userPort = strings.TrimSpace(userPort)
 	ports := strings.Split(userPort, ",")
 	for _, v := range ports {
@@ -64,6 +65,7 @@ func ScanIPs(filePath ...string) {
 	var results []string
 	portTimeout := time.Second * time.Duration(timeout)
 
+	// spawn a fixed number of goroutines for files contain more than 1000 IPs
 	if len(ips) > 1000 {
 
 		maxWorkers := 1000
@@ -72,22 +74,24 @@ func ScanIPs(filePath ...string) {
 		if len(ips)%maxWorkers != 0 {
 			chunkSize++
 		}
-		ipChuncks := make(chan []string, chunkSize)
+		ipChunks := make(chan []string, chunkSize)
 
+		// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 		for i := 0; i < maxWorkers; i++ {
 			wg.Add(1)
-			go CheckPorts2(ipChuncks, filteredPorts, &mutex, &wg, &portTimeout, &results)
+			go CheckPorts2(ipChunks, filteredPorts, &mutex, &wg, &portTimeout, &results)
 		}
 
+		// share IPs among goroutines by sending calculated chunk data size to worker channel.
 		for i := 0; i < len(ips); i += chunkSize {
 			end := i + chunkSize
 			if end > len(ips) {
 				end = len(ips)
 			}
-			ipChuncks <- ips[i:end]
+			ipChunks <- ips[i:end]
 		}
 
-		close(ipChuncks)
+		close(ipChunks)
 	} else {
 		// spawn same number of goroutines as IPs for scanning the ports.
 		for _, ip := range ips {

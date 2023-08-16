@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// get the services running on each port connection created.
+// GetServiceInfo get the services running on each port connection created.
 func GetServiceInfo(conn net.Conn) (string, error) {
 	conn.SetReadDeadline(time.Now().Add(time.Second * 2))
 	buffer := make([]byte, 1024)
@@ -24,7 +24,7 @@ func GetServiceInfo(conn net.Conn) (string, error) {
 	return data, nil
 }
 
-// clear the port service info off any newline characters.
+// SanitizeServiceInfo clear the port service info off any newline characters.
 func SanitizeServiceInfo(serviceInfo string) string {
 	sanitized := strings.ReplaceAll(serviceInfo, "\n", " ")
 	sanitized = strings.TrimSpace(sanitized)

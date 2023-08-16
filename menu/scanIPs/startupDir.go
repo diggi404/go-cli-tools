@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// initialize the default directory path for keeping results of scanned IPs
+// SetupDir initialize the default directory path for keeping results of scanned IPs
 func SetupDir() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
