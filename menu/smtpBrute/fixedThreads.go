@@ -12,7 +12,7 @@ func ProcessCredentials(wordList <-chan []string, testEmail string, storeCreds *
 	wordListChunks := <-wordList
 	for _, creds := range wordListChunks {
 		splitedCreds, err := FilterGmailCreds(creds)
-		if err != nil {
+		if err != nil && splitedCreds != nil {
 			results, err := ConnectSMTP(splitedCreds, testEmail)
 			if err == nil {
 				mutex.Lock()
@@ -24,7 +24,7 @@ func ProcessCredentials(wordList <-chan []string, testEmail string, storeCreds *
 				*storeCreds = append(*storeCreds, finalCreds)
 			}
 
-		} else {
+		} else if err == nil {
 			smtpCreds, err := LookupDomain(splitedCreds)
 			if err == nil {
 				results, err := ConnectSMTP(smtpCreds, testEmail)

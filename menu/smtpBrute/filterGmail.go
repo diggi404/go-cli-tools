@@ -2,16 +2,14 @@ package smtpbrute
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"strings"
 )
 
 func FilterGmailCreds(creds string) ([]string, error) {
 	splitedCreds := strings.Split(creds, ":")
 	if len(splitedCreds) != 2 {
-		fmt.Println("Please make sure your wordlist is separated by a colon (:)")
-		os.Exit(2)
+		err := errors.New("please make sure your crendentials are separated by colon (:)")
+		return nil, err
 	}
 	username, password := splitedCreds[0], splitedCreds[1]
 	if strings.Contains(username, "@gmail.com") {
