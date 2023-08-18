@@ -1,7 +1,7 @@
 package smtpbrute
 
 import (
-	"fmt"
+	"bufio"
 	"os"
 )
 
@@ -13,14 +13,13 @@ func ReadCredsFromFile(fileName string) ([]string, error) {
 	defer file.Close()
 
 	var wordList []string
-	var creds string
-	for {
-		_, err := fmt.Fscanf(file, "%s", &creds)
-		if err != nil {
-			break
-		}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		creds := scanner.Text()
 		wordList = append(wordList, creds)
 	}
-
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
 	return wordList, nil
 }

@@ -11,7 +11,7 @@ func LookupDomain(creds []string) ([]string, error) {
 	domain := domainSplit[1]
 	record, err := net.LookupMX(domain)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	var host string
 	for _, v := range record {

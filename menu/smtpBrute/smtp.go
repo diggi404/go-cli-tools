@@ -19,8 +19,8 @@ func ConnectSMTP(credentials []string, testEmail string) ([]string, error) {
 	mailer.SetBody("text/plain", emailBody)
 	err := dialer.DialAndSend(mailer)
 	if err != nil {
-		// fmt.Printf("err: %v\n", err)
-		return []string{}, err
+		fmt.Printf("err: %v\n", err)
+		return nil, err
 	}
 	credentials = append(credentials, "587")
 	return credentials, nil

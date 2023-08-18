@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -14,14 +15,13 @@ func ReadIPsFromFile(fileName string) ([]string, error) {
 	defer file.Close()
 
 	var ips []string
-	var ip string
-	for {
-		_, err := fmt.Fscanf(file, "%s", &ip)
-		if err != nil {
-			break
-		}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		ip := scanner.Text()
 		ips = append(ips, ip)
 	}
-
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("err: %v\n", err)
+	}
 	return ips, nil
 }
