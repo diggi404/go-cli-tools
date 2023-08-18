@@ -1,7 +1,9 @@
 package menu
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -13,26 +15,28 @@ import (
 // ScanIPs Main function for scanning Bulk IPs.
 func ScanIPs(filePath ...string) {
 	var (
-		userPort      string
 		filteredPorts []string
 		timeout       int
 	)
 
 	// take and filter inputs.
+	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 22,3389,2083")
 	fmt.Print(">>>> ")
-	fmt.Scanln(&userPort)
+	userPort, _ := reader.ReadString('\n')
 	fmt.Print("Enter the timeout in seconds (Default = 10s) :> ")
 	fmt.Scanln(&timeout)
 
 	// filter all entered ports
-	userPort = strings.TrimSpace(userPort)
 	ports := strings.Split(userPort, ",")
-	for _, v := range ports {
-		if v != "" {
-			filteredPorts = append(filteredPorts, v)
+	for _, port := range ports {
+		portTrimed := strings.TrimSpace(port)
+		if len(portTrimed) != 0 {
+
+			filteredPorts = append(filteredPorts, portTrimed)
 		}
 	}
+	fmt.Printf("filteredPorts: %v\n", filteredPorts)
 
 	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
