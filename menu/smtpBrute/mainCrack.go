@@ -33,7 +33,7 @@ func BruteSmtp() {
 	var mutex sync.Mutex
 	var results []string
 
-	maxWorkers := 10000
+	maxWorkers := 1000
 	chunkSize := len(wordList) / maxWorkers
 
 	if len(wordList)%maxWorkers != 0 {
@@ -44,7 +44,7 @@ func BruteSmtp() {
 	// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go ProcessCredentials(wordListChunks, testEmail, &results, &mutex, &wg)
+		go ProcessCredentials(wordListChunks, i, testEmail, &results, &mutex, &wg)
 	}
 
 	// share wordlist among goroutines by sending calculated chunk data size to worker channel.
@@ -55,6 +55,7 @@ func BruteSmtp() {
 		}
 		wordListChunks <- wordList[i:end]
 	}
+	fmt.Printf("len(wordListChunks): %v\n", len(wordListChunks))
 	close(wordListChunks)
 
 	wg.Wait()
