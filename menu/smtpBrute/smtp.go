@@ -7,18 +7,21 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func ConnectSMTP(credentials []string, testEmail string) {
+func ConnectSMTP(credentials []string, testEmail string) ([]string, error) {
 	username, password, host := credentials[0], credentials[1], credentials[2]
 	dialer := gomail.NewDialer(host, 587, username, password)
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", host)
+	mailer.SetHeader("From", username)
 	mailer.SetHeader("To", testEmail)
-	mailer.SetHeader("Subject", "SMTP Test")
-	mailer.SetBody("text/plain", "This is the body of the email.")
+	mailer.SetHeader("Subject", fmt.Sprintf("SMTP Host: %s", host))
+	emailBody := fmt.Sprintf("SMTP Host: %s\nPort: %d\nUsername: %s\nPassword: %s", host, 587, username, password)
+	mailer.SetBody("text/plain", emailBody)
 	err := dialer.DialAndSend(mailer)
 	if err != nil {
-		return
+		// fmt.Printf("err: %v\n", err)
+		return []string{}, err
 	}
-	fmt.Println("email sent")
+	credentials = append(credentials, "587")
+	return credentials, nil
 }

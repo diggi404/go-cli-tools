@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	"github.com/ncruces/zenity"
 )
 
@@ -23,6 +24,10 @@ func BruteSmtp() {
 	fmt.Printf("filePath: %v\n", filePath)
 	wordList, _ := ReadCredsFromFile(filePath)
 	testEmail = strings.TrimSpace(testEmail)
+
+	red := color.New(color.FgRed).PrintlnFunc()
+	red("SMTP Host\tPort\tUsername\t\tPassword")
+	red("-------------------------------------------------------------------")
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -49,7 +54,6 @@ func BruteSmtp() {
 		}
 		wordListChunks <- wordList[i:end]
 	}
-	fmt.Printf("len(wordListChunks): %v\n", len(wordListChunks))
 	close(wordListChunks)
 
 	wg.Wait()
