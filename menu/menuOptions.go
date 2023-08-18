@@ -3,6 +3,7 @@ package menu
 import (
 	"fmt"
 	menu "go_cli/menu/scanIPs"
+	smtpbrute "go_cli/menu/smtpBrute"
 	"os"
 	"strings"
 
@@ -38,7 +39,7 @@ func MenuSelection(selectedOption int) {
 	} else if selectedOption == 1 {
 		menu.ScanIPs()
 	} else if selectedOption == 2 {
-		SmtpCrack()
+		smtpbrute.BruteSmtp()
 	}
 	os.Exit(0)
 }
@@ -60,7 +61,7 @@ func AfterGenIP(choice, filePath string) {
 	case 2:
 		menu.ScanIPs()
 	case 3:
-		SmtpCrack()
+		smtpbrute.BruteSmtp()
 	case 4:
 		os.Exit(0)
 	}
