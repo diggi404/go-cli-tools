@@ -23,15 +23,15 @@ func BruteSmtp() {
 	}
 	fmt.Printf("filePath: %v\n", filePath)
 	wordList, _ := ReadCredsFromFile(filePath)
+	fmt.Printf("len(wordList): %v\n", len(wordList))
 	testEmail = strings.TrimSpace(testEmail)
 
 	red := color.New(color.FgRed).PrintlnFunc()
-	red("SMTP Host\tPort\tUsername\t\tPassword")
+	red("SMTP Host\t\tPort\t\tUsername\t\tPassword")
 	red("-------------------------------------------------------------------")
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
-	var results []string
 
 	maxWorkers := 1000
 	chunkSize := len(wordList) / maxWorkers
@@ -41,10 +41,13 @@ func BruteSmtp() {
 	}
 	wordListChunks := make(chan []string, chunkSize)
 
+	file := WriteResultsToFile()
+	defer file.Close()
+
 	// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go ProcessCredentials(wordListChunks, i, testEmail, &results, &mutex, &wg)
+		go ProcessCredentials(wordListChunks, &file, i, testEmail, &mutex, &wg)
 	}
 
 	// share wordlist among goroutines by sending calculated chunk data size to worker channel.
@@ -55,10 +58,8 @@ func BruteSmtp() {
 		}
 		wordListChunks <- wordList[i:end]
 	}
-	fmt.Printf("len(wordListChunks): %v\n", len(wordListChunks))
+	fmt.Printf("len(wordListsChunk): %v\n", len(wordListChunks))
 	close(wordListChunks)
-
 	wg.Wait()
-	WriteResultsToFile(results)
 	fmt.Println("all checks are done!")
 }

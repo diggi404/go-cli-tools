@@ -11,11 +11,10 @@ func FilterGmailCreds(creds string) ([]string, error) {
 		err := errors.New("please make sure your crendentials are separated by colon (:)")
 		return nil, err
 	}
-	username, password := splitedCreds[0], splitedCreds[1]
+	username := splitedCreds[0]
 	if strings.Contains(username, "@gmail.com") {
 		err := errors.New("domain is gmail")
-		splitedCreds = []string{username, password, "smtp.gmail.com"}
-		return splitedCreds, err
+		return nil, err
 	}
 	return splitedCreds, nil
 }
