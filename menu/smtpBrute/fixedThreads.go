@@ -8,10 +8,11 @@ import (
 	"github.com/fatih/color"
 )
 
-func ProcessCredentials(wordList <-chan []string, file *os.File, index int, testEmail string, mutex *sync.Mutex, wg *sync.WaitGroup) {
+func ProcessCredentials(wordList <-chan []string, file *os.File, index int, testEmail string, mutex *sync.Mutex, wg *sync.WaitGroup, totalChecks *int) {
 	defer wg.Done()
 	wordListChunks := <-wordList
 	green := color.New(color.FgGreen).PrintfFunc()
+	blue := color.New(color.FgBlue).PrintfFunc()
 	red := color.New(color.FgRed).PrintfFunc()
 	for _, creds := range wordListChunks {
 		splitedCreds, err := FilterGmailCreds(creds)
@@ -21,13 +22,19 @@ func ProcessCredentials(wordList <-chan []string, file *os.File, index int, test
 				results, err := ConnectSMTP(smtpCreds, testEmail)
 				if err == nil {
 					mutex.Lock()
+					*totalChecks += 1
+					blue("%d: -> ", *totalChecks)
 					host, port, username, password := results[2], results[3], results[0], results[1]
 					green("%s\t%s\t%s\t%s\n", host, port, username, password)
 					finalCreds := fmt.Sprintf("%s:%s => %s:%s\n", host, port, username, password)
 					file.WriteString(finalCreds)
 					mutex.Unlock()
 				} else {
-					red("%s index: %d\n", results, index)
+					mutex.Lock()
+					*totalChecks += 1
+					blue("%d: -> ", *totalChecks)
+					red("%s\n", err)
+					mutex.Unlock()
 				}
 
 			}
