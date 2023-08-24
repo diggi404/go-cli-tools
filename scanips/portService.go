@@ -1,4 +1,4 @@
-package menu
+package scanips
 
 import (
 	"errors"

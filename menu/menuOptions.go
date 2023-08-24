@@ -2,8 +2,9 @@ package menu
 
 import (
 	"fmt"
-	menu "go_cli/menu/scanIPs"
-	smtpbrute "go_cli/menu/smtpBrute"
+	"go_cli/bulkips"
+	"go_cli/scanips"
+	"go_cli/smtpbrute"
 	"os"
 	"strings"
 
@@ -27,7 +28,7 @@ func PrintMenu(items []string, selectedIndex int) {
 // MenuSelection Handles user's selection from the Main Menu i.e. When the app is launched.
 func MenuSelection(selectedOption int) {
 	if selectedOption == 0 {
-		filePath, err := GenIP()
+		filePath, err := bulkips.GenIP()
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
 			AfterGenIP("", "")
@@ -37,7 +38,7 @@ func MenuSelection(selectedOption int) {
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath)
 	} else if selectedOption == 1 {
-		menu.ScanIPs()
+		scanips.ScanIPs()
 	} else if selectedOption == 2 {
 		smtpbrute.BruteSmtp()
 	}
@@ -48,7 +49,7 @@ func MenuSelection(selectedOption int) {
 func AfterGenIP(choice, filePath string) {
 	choice = strings.ToLower(choice)
 	if choice == "yes" || choice == "y" {
-		menu.ScanIPs(filePath)
+		scanips.ScanIPs(filePath)
 		os.Exit(0)
 	}
 	fmt.Print("\n")
@@ -57,9 +58,9 @@ func AfterGenIP(choice, filePath string) {
 	fmt.Scanln(&selectedOption)
 	switch selectedOption {
 	case 1:
-		GenIP()
+		bulkips.GenIP()
 	case 2:
-		menu.ScanIPs()
+		scanips.ScanIPs()
 	case 3:
 		smtpbrute.BruteSmtp()
 	case 4:
