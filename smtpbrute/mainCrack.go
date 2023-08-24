@@ -59,7 +59,7 @@ func BruteSmtp() {
 		}
 		wordListChunks <- wordList[i:end]
 	}
-	fmt.Printf("len(wordListsChunk): %v\n", len(wordListChunks))
+	// fmt.Printf("len(wordListsChunk): %v\n", len(wordListChunks))
 	close(wordListChunks)
 	wg.Wait()
 	fmt.Println("all checks are done!")
