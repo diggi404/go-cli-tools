@@ -3,18 +3,22 @@ package scanips
 import (
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/fatih/color"
 )
 
-func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, results *[]string, validIPs ...string) {
+func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg *sync.WaitGroup, timeout *time.Duration, file *os.File, totalChecks *int) {
 	defer wg.Done()
 
 	if *timeout == 0 {
 		*timeout = time.Second * 10
 	}
+
+	green := color.New(color.FgGreen).PrintfFunc()
+	blue := color.New(color.FgBlue).PrintfFunc()
 
 	// get pushed data to channel at a go.
 	ipsChunk := <-ipChunks
@@ -22,7 +26,6 @@ func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg
 	for _, ip := range ipsChunk {
 		var openPorts []string
 		var portServices []string
-		start := StartTime()
 		for _, port := range ports {
 			address := fmt.Sprintf("%s:%s", ip, port)
 			conn, err := net.DialTimeout("tcp", address, *timeout)
@@ -34,23 +37,18 @@ func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg
 				conn.Close()
 			}
 		}
-		end := EndTime()
 		if len(openPorts) != 0 {
-			resultFormat := fmt.Sprintf("%s\t%s\t%s\t%s\t%s\n", ip, openPorts, portServices, start, end)
-			validIPs = append(validIPs, resultFormat)
+			mutex.Lock()
+			*totalChecks += 1
+			blue("%d: -> ", *totalChecks)
+			results := fmt.Sprintf("%s\t%s\t%s\n", ip, openPorts, portServices)
+			green(results)
+			file.WriteString(results)
+			mutex.Unlock()
+		} else {
+			mutex.Lock()
+			*totalChecks += 1
+			mutex.Unlock()
 		}
 	}
-	if len(validIPs) == 0 {
-		return
-	}
-
-	// use mutex to lock shared resource for better synchronization between goroutines.
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	green := color.New(color.FgGreen).PrintfFunc()
-	for _, result := range validIPs {
-		green(result)
-	}
-	*results = append(*results, validIPs...)
 }

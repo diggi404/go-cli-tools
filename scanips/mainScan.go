@@ -66,8 +66,11 @@ func ScanIPs(filePath ...string) {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	var portServices []string
-	var results []string
+	var totalChecks int
 	portTimeout := time.Second * time.Duration(timeout)
+
+	file := WriteToFile()
+	defer file.Close()
 
 	// spawn a fixed number of goroutines for files contain more than 1000 IPs
 	if len(ips) > 1000 {
@@ -83,7 +86,7 @@ func ScanIPs(filePath ...string) {
 		// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 		for i := 0; i < maxWorkers; i++ {
 			wg.Add(1)
-			go CheckPorts2(ipChunks, filteredPorts, &mutex, &wg, &portTimeout, &results)
+			go CheckPorts2(ipChunks, filteredPorts, &mutex, &wg, &portTimeout, &file, &totalChecks)
 		}
 
 		// share IPs among goroutines by sending calculated chunk data size to worker channel.
@@ -100,12 +103,11 @@ func ScanIPs(filePath ...string) {
 		// spawn same number of goroutines as IPs for scanning the ports.
 		for _, ip := range ips {
 			wg.Add(1)
-			go CheckPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, &results)
+			go CheckPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, &file, &totalChecks)
 		}
 	}
 
 	// wait for all goroutines to finish...
 	wg.Wait()
-	WriteToFile(results)
 	fmt.Println("All checks completed.")
 }
