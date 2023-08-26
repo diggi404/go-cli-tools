@@ -3,6 +3,7 @@ package menu
 import (
 	"fmt"
 	"go_cli/bulkips"
+	"go_cli/cpanelbrute"
 	"go_cli/scanips"
 	"go_cli/smtpbrute"
 	"os"
@@ -41,6 +42,8 @@ func MenuSelection(selectedOption int) {
 		scanips.ScanIPs()
 	} else if selectedOption == 2 {
 		smtpbrute.BruteSmtp()
+	} else if selectedOption == 3 {
+		cpanelbrute.CpanelCrack()
 	}
 	os.Exit(0)
 }
@@ -64,6 +67,8 @@ func AfterGenIP(choice, filePath string) {
 	case 3:
 		smtpbrute.BruteSmtp()
 	case 4:
+		cpanelbrute.CpanelCrack()
+	case 5:
 		os.Exit(0)
 	}
 }

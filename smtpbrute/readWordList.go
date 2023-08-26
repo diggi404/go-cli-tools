@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-func ReadCredsFromFile(fileName string) ([]string, error) {
-	file, err := os.Open(fileName)
+func ReadCredsFromFile(filePath string) ([]string, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}

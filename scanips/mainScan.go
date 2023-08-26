@@ -36,7 +36,6 @@ func ScanIPs(filePath ...string) {
 			filteredPorts = append(filteredPorts, portTrimed)
 		}
 	}
-	fmt.Printf("filteredPorts: %v\n", filteredPorts)
 
 	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
@@ -60,7 +59,7 @@ func ScanIPs(filePath ...string) {
 	}
 	fmt.Printf("Total IPs: %v\n", len(ips))
 	red := color.New(color.FgRed).PrintlnFunc()
-	red("IP Address\tOpen Ports\tService     Start\tEnd Time")
+	red("IP Address\tOpen Ports\tService")
 	red("----------------------------------------------------------------------------------")
 
 	var wg sync.WaitGroup
