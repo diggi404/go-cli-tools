@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "SMTP Cracker", "CPanel Crack", "Exit"}
+	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "Mass Mailer", "SMS Sender", "Email Bomber", "SMTP Cracker", "CPanel Crack", "Exit"}
 	selectedIndex := 0
 	var selectedOption int
 
