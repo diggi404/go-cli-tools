@@ -10,3 +10,4 @@ ip_list
 dist/
 .goreleaser.yaml
 smtps
+cpanel_logs
