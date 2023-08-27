@@ -45,7 +45,7 @@ func CpanelCrack() {
 	}
 	fmt.Printf("Total Credentials: %v\n", len(wordlist))
 
-	maxWorkers := 1000
+	maxWorkers := 100
 	chunkSize := len(wordlist) / maxWorkers
 
 	if len(wordlist)%maxWorkers != 0 {
@@ -76,4 +76,5 @@ func CpanelCrack() {
 	fmt.Printf("len(wordlistChunks): %v\n", len(wordlistChunks))
 	close(wordlistChunks)
 	wg.Wait()
+	fmt.Println("all checks are done!")
 }
