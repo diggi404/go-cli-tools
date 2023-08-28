@@ -11,6 +11,12 @@ require (
 )
 
 require (
+	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
+	github.com/schollz/progressbar/v3 v3.13.1
+	golang.org/x/term v0.6.0 // indirect
+)
+
+require (
 	github.com/VividCortex/ewma v1.2.0 // indirect; indirectx
 	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/dchest/jsmin v0.0.0-20220218165748-59f39799265f // indirect

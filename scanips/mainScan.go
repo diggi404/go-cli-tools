@@ -3,6 +3,7 @@ package scanips
 import (
 	"bufio"
 	"fmt"
+	"go_cli/fileutil"
 	"os"
 	"strings"
 	"sync"
@@ -42,7 +43,7 @@ func ScanIPs(filePath ...string) {
 		fmt.Println("Select your file: ")
 		fileName, err := zenity.SelectFile(
 			zenity.FileFilters{
-				{Name: "IP list", Patterns: []string{"*.txt"}, CaseFold: false},
+				{Patterns: []string{"*.txt"}, CaseFold: false},
 			})
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
@@ -52,7 +53,7 @@ func ScanIPs(filePath ...string) {
 	}
 
 	// continuation for both selection from main menu and after generating bulk ips
-	ips, err := ReadIPsFromFile(filePath[0])
+	ips, err := fileutil.ReadFromFile(filePath[0])
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -68,7 +69,7 @@ func ScanIPs(filePath ...string) {
 	var totalChecks int
 	portTimeout := time.Second * time.Duration(timeout)
 
-	file := WriteToFile()
+	file := fileutil.WriteToFile("ip_scans", "scanned_ips.txt")
 	defer file.Close()
 
 	// spawn a fixed number of goroutines for files contain more than 1000 IPs
@@ -85,7 +86,7 @@ func ScanIPs(filePath ...string) {
 		// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 		for i := 0; i < maxWorkers; i++ {
 			wg.Add(1)
-			go CheckPorts2(ipChunks, filteredPorts, &mutex, &wg, &portTimeout, &file, &totalChecks)
+			go CheckPorts2(ipChunks, filteredPorts, &mutex, &wg, &portTimeout, file, &totalChecks)
 		}
 
 		// share IPs among goroutines by sending calculated chunk data size to worker channel.
@@ -102,7 +103,7 @@ func ScanIPs(filePath ...string) {
 		// spawn same number of goroutines as IPs for scanning the ports.
 		for _, ip := range ips {
 			wg.Add(1)
-			go CheckPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, &file, &totalChecks)
+			go CheckPorts(ip, filteredPorts, &mutex, &wg, &portTimeout, portServices, file, &totalChecks)
 		}
 	}
 

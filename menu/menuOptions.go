@@ -52,7 +52,7 @@ func MenuSelection(selectedOption int) {
 	} else if selectedOption == 5 {
 		smtpbrute.BruteSmtp()
 	} else if selectedOption == 6 {
-		cpanelbrute.CpanelCrack()
+		cpanelbrute.CpanelBrute()
 	}
 	os.Exit(0)
 }
@@ -82,7 +82,7 @@ func AfterGenIP(choice, filePath string) {
 	case 6:
 		smtpbrute.BruteSmtp()
 	case 7:
-		cpanelbrute.CpanelCrack()
+		cpanelbrute.CpanelBrute()
 	default:
 		os.Exit(0)
 	}
