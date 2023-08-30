@@ -7,9 +7,11 @@ import (
 	"os"
 
 	"github.com/eiannone/keyboard"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "Mass Mailer", "SMS Sender", "Email Bomber", "SMTP Cracker", "CPanel Crack", "Exit"}
 	selectedIndex := 0
 	var selectedOption int

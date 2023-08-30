@@ -20,6 +20,7 @@ require (
 	github.com/VividCortex/ewma v1.2.0 // indirect; indirectx
 	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/dchest/jsmin v0.0.0-20220218165748-59f39799265f // indirect
+	github.com/joho/godotenv v1.5.1
 	github.com/josephspurrier/goversioninfo v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
