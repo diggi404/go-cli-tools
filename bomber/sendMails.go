@@ -1,7 +1,9 @@
 package bomber
 
 import (
+	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -10,7 +12,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SendMail(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *gomail.SendCloser, msgOptions *gomail.Message, smtpCreds *SmtpOpts, sucBar *progressbar.ProgressBar, failsBar *progressbar.ProgressBar) {
+func SingleBomb(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *gomail.SendCloser, msgOptions *gomail.Message, smtpCreds *SmtpOpts, sucBar *progressbar.ProgressBar) {
 	defer wg.Done()
 	article := <-articleChunks
 	rounds := <-workingChan
@@ -21,16 +23,62 @@ func SendMail(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.W
 		rand.New(rand.NewSource(time.Now().UnixNano()))
 		randomInt := rand.Intn(1000)
 		randNum := strconv.Itoa(randomInt)
+		mutex.Lock()
 		msgOptions.SetAddressHeader("From", smtpCreds.Username, article.Author)
 		msgOptions.SetHeader("Subject", article.Title+randNum)
 		msgOptions.SetBody("text/plain", article.Description)
-		mutex.Lock()
 		err := gomail.Send(*smtpConn, msgOptions)
 		if err == nil {
 			sucBar.Add(1)
-		} else {
-			failsBar.Add(1)
 		}
 		mutex.Unlock()
 	}
+}
+
+func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *gomail.SendCloser, msgOptions *gomail.Message, smtpCreds *SmtpOpts, numBombs int) {
+	defer wg.Done()
+
+	emailList := <-emailChunks
+	for _, email := range emailList {
+		pgBarDescription := fmt.Sprintf("%s ->", email)
+		sucBar := MakePgBar(numBombs, pgBarDescription)
+		for i := 0; i < numBombs; i++ {
+			article := <-articleChunks
+			if article.Author == "" {
+				article.Author = "Henry Sams"
+			}
+			rand.New(rand.NewSource(time.Now().UnixNano()))
+			randomInt := rand.Intn(1000)
+			randNum := strconv.Itoa(randomInt)
+			subject := fmt.Sprintf("%s %s", article.Title, randNum)
+			mutex.Lock()
+			msgOptions.SetAddressHeader("From", smtpCreds.Username, article.Author)
+			msgOptions.SetHeader("To", email)
+			msgOptions.SetHeader("Subject", subject)
+			msgOptions.SetBody("text/plain", article.Description)
+			err := gomail.Send(*smtpConn, msgOptions)
+			if err == nil {
+				sucBar.Add(1)
+			}
+			mutex.Unlock()
+		}
+	}
+}
+
+func MakePgBar(numBombs int, description string) *progressbar.ProgressBar {
+	sucBar := progressbar.NewOptions(numBombs,
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionShowCount(),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetDescription(description),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]=[reset]",
+			SaucerHead:    "[green]>[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}),
+	)
+
+	return sucBar
 }

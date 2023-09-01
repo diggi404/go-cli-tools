@@ -14,7 +14,6 @@ func SendMail(emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex
 	for _, email := range emailList {
 		msgOpts.SetHeader("To", email)
 		mutex.Lock()
-		defer mutex.Unlock()
 		err := gomail.Send(*smtpConn, msgOpts)
 		if err == nil {
 			results.Success += 1
@@ -24,6 +23,7 @@ func SendMail(emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex
 			results.Fails += 1
 			bar.Add(1)
 		}
+		mutex.Unlock()
 
 	}
 

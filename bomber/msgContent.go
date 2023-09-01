@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Source struct {
@@ -30,7 +31,11 @@ type APIResponse struct {
 }
 
 func GetMsgContent() (APIResponse, error) {
-	res, err := http.Get("https://newsapi.org/v2/everything?q=tesla&from=2023-07-30&sortBy=publishedAt&apiKey=300e5445bd884438bafd4685f9a536e5")
+	curDate := time.Now()
+	prevMonth := curDate.AddDate(0, -1, 0)
+	prevMonthDate := prevMonth.Format("2006-01-02")
+	apiUrl := fmt.Sprintf("https://newsapi.org/v2/everything?q=tesla&from=%s&sortBy=publishedAt&apiKey=300e5445bd884438bafd4685f9a536e5", prevMonthDate)
+	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return APIResponse{}, err
