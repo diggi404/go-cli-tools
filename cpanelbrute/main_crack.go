@@ -14,9 +14,13 @@ import (
 
 func CpanelBrute() {
 	var target string
-	fmt.Println("Enter the CPanel Domain (example: https://website.com:2083/)")
+	fmt.Println("\nEnter the CPanel Domain (example: https://website.com:2083/)")
 	fmt.Print(">>> ")
 	fmt.Scanln(&target)
+	if len(target) == 0 {
+		fmt.Println("invalid input!")
+		return
+	}
 	trimedTarget := strings.TrimSpace(target)
 	validateTarget, err := regexp.Match(`https?://[^:]+:(\d+)/\z`, []byte(trimedTarget))
 	if err != nil {
@@ -28,7 +32,7 @@ func CpanelBrute() {
 		return
 	}
 
-	fmt.Println("Select your wordlist: ")
+	fmt.Println("\nSelect your wordlist: ")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
@@ -37,13 +41,13 @@ func CpanelBrute() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("filePath: %v\n", filePath)
+	fmt.Printf("\nfilePath: %v\n", filePath)
 	wordlist, err := fileutil.ReadFromFile(filePath)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("Total Credentials: %v\n", len(wordlist))
+	fmt.Printf("\nTotal Credentials: %v\n", len(wordlist))
 
 	maxWorkers := 100
 	chunkSize := len(wordlist) / maxWorkers
@@ -76,5 +80,5 @@ func CpanelBrute() {
 	fmt.Printf("len(wordlistChunks): %v\n", len(wordlistChunks))
 	close(wordlistChunks)
 	wg.Wait()
-	fmt.Println("all checks are done!")
+	fmt.Println("\nall checks are done!")
 }

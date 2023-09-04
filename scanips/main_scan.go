@@ -22,10 +22,17 @@ func ScanIPs(filePath ...string) {
 
 	// take and filter inputs.
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter the ports you want to scan separated by comma(,). example: 22,3389,2083")
+	fmt.Println("\nEnter the ports you want to scan separated by comma(,). example: 22,3389,2083")
 	fmt.Print(">>>> ")
-	userPort, _ := reader.ReadString('\n')
-	fmt.Print("Enter the timeout in seconds (Default = 10s) :> ")
+	userPort, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	} else if userPort == "\n" {
+		fmt.Println("invalid input!")
+		return
+	}
+	fmt.Print("\nEnter the timeout in seconds (Default = 10s) :> ")
 	fmt.Scanln(&timeout)
 
 	// filter all entered ports
@@ -40,7 +47,7 @@ func ScanIPs(filePath ...string) {
 
 	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
-		fmt.Println("Select your file: ")
+		fmt.Println("\nSelect your file: ")
 		fileName, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.txt"}, CaseFold: false},
@@ -58,9 +65,9 @@ func ScanIPs(filePath ...string) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Printf("Total IPs: %v\n", len(ips))
+	fmt.Printf("\nTotal IPs: %v\n", len(ips))
 	red := color.New(color.FgRed).PrintlnFunc()
-	red("IP Address\tOpen Ports\tService")
+	red("\nIP Address\tOpen Ports\tService")
 	red("----------------------------------------------------------------------------------")
 
 	var wg sync.WaitGroup
@@ -109,5 +116,5 @@ func ScanIPs(filePath ...string) {
 
 	// wait for all goroutines to finish...
 	wg.Wait()
-	fmt.Println("All checks completed.")
+	fmt.Println("\nAll checks completed.")
 }

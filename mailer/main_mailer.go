@@ -36,7 +36,14 @@ func Mailer() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD")
 	fmt.Print(">>> ")
-	smtpCreds, _ := reader.ReadString('\n')
+	smtpCreds, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	} else if smtpCreds == "\n" {
+		fmt.Println("invalid input!")
+		return
+	}
 	splitedCreds := strings.Split(smtpCreds, ",")
 
 	for _, creds := range splitedCreds {
@@ -83,6 +90,10 @@ func Mailer() {
 	var rawMsgType string
 	fmt.Print("\nWhat type of content are you sending? plain/html :> ")
 	fmt.Scanln(&rawMsgType)
+	if len(rawMsgType) == 0 {
+		fmt.Println("invalid choice!")
+		return
+	}
 	msgType := strings.ToLower(strings.TrimSpace(rawMsgType))
 
 	if msgType == "html" || strings.Contains(msgType, "html") {
@@ -109,17 +120,38 @@ func Mailer() {
 	} else {
 
 		fmt.Print("\nEnter your Message :> ")
-		msg, _ := reader.ReadString('\n')
+		msg, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return
+		} else if msg == "\n" {
+			fmt.Println("invalid input!")
+			return
+		}
 		mailOpts.Message = msg
 		mailOpts.IsMsgPlain = true
 	}
 
 	fmt.Print("\nEnter Message Subject :> ")
-	msgSubject, _ := reader.ReadString('\n')
+	msgSubject, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	} else if msgSubject == "\n" {
+		fmt.Println("invalid input!")
+		return
+	}
 	mailOpts.Subject = strings.TrimSpace(msgSubject)
 
 	fmt.Print("\nEnter from name :> ")
-	fromName, _ := reader.ReadString('\n')
+	fromName, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	} else if fromName == "\n" {
+		fmt.Println("invalid input!")
+		return
+	}
 	mailOpts.FromName = strings.TrimSpace(fromName)
 
 	maxWorkers := 1000
@@ -135,7 +167,7 @@ func Mailer() {
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionShowCount(),
 		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetDescription("\nSending emails..."),
+		progressbar.OptionSetDescription("Sending emails..."),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "[green]=[reset]",
 			SaucerHead:    "[green]>[reset]",
@@ -171,8 +203,9 @@ func Mailer() {
 	}
 	close(emailListChunks)
 	wg.Wait()
-	successMsg := fmt.Sprintf("\nSent: %d", results.Success)
-	failMsg := fmt.Sprintf("Fails: %d", results.Fails)
+	successMsg := fmt.Sprintf("\n\n\t\t\tSent: %d", results.Success)
+	failMsg := fmt.Sprintf("\t\t\tFails: %d", results.Fails)
 	color.New(color.FgGreen).Println(successMsg)
 	color.New(color.FgRed).Println(failMsg)
+	fmt.Println("\nall done.")
 }
