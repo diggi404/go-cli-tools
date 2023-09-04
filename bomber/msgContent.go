@@ -30,11 +30,16 @@ type APIResponse struct {
 	Articles     []Article `json:"articles"`
 }
 
-func GetMsgContent() (APIResponse, error) {
+func GetMsgContent(apiKey string) (APIResponse, error) {
 	curDate := time.Now()
-	prevMonth := curDate.AddDate(0, -1, 0)
+	prevMonth := curDate.AddDate(0, -1, 1)
 	prevMonthDate := prevMonth.Format("2006-01-02")
-	apiUrl := fmt.Sprintf("https://newsapi.org/v2/everything?q=tesla&from=%s&sortBy=publishedAt&apiKey=300e5445bd884438bafd4685f9a536e5", prevMonthDate)
+	var apiUrl string
+	if len(apiKey) == 0 {
+		apiUrl = fmt.Sprintf("https://newsapi.org/v2/everything?q=football&from=%s&sortBy=publishedAt&apiKey=300e5445bd884438bafd4685f9a536e5", prevMonthDate)
+	} else {
+		apiUrl = fmt.Sprintf("https://newsapi.org/v2/everything?q=football&from=%s&sortBy=publishedAt&apiKey=%s", prevMonthDate, apiKey)
+	}
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)

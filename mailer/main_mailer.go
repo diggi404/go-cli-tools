@@ -46,7 +46,7 @@ func Mailer() {
 		}
 	}
 
-	fmt.Println("verifying SMTP credentials...")
+	fmt.Println("\nverifying SMTP credentials...")
 
 	host, portStr, username, password := filteredCreds[0], filteredCreds[1], filteredCreds[2], filteredCreds[3]
 	port, _ := strconv.Atoi(portStr)
@@ -60,10 +60,10 @@ func Mailer() {
 	}
 	defer smtpConn.Close()
 
-	color.New(color.FgGreen).Println("SMTP connection was successful.")
+	color.New(color.FgGreen).Printf("\nSMTP connection established successfully :)\n")
 	mailOpts := MailOut{FromEmail: username}
 
-	fmt.Println("Select your email list: ")
+	fmt.Println("\nSelect your email list: ")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
@@ -78,16 +78,16 @@ func Mailer() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("Total Emails: %v\n", len(emailList))
+	fmt.Printf("\nTotal Emails: %v\n", len(emailList))
 
 	var rawMsgType string
-	fmt.Print("What type of content are you sending? plain/html :> ")
+	fmt.Print("\nWhat type of content are you sending? plain/html :> ")
 	fmt.Scanln(&rawMsgType)
 	msgType := strings.ToLower(strings.TrimSpace(rawMsgType))
 
 	if msgType == "html" || strings.Contains(msgType, "html") {
 
-		fmt.Println("Select your html letter: ")
+		fmt.Println("\nSelect your html letter: ")
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.html"}, CaseFold: false},
@@ -108,17 +108,17 @@ func Mailer() {
 		mailOpts.IsMsgPlain = false
 	} else {
 
-		fmt.Print("Enter your Message :> ")
+		fmt.Print("\nEnter your Message :> ")
 		msg, _ := reader.ReadString('\n')
 		mailOpts.Message = msg
 		mailOpts.IsMsgPlain = true
 	}
 
-	fmt.Print("Enter Message Subject :> ")
+	fmt.Print("\nEnter Message Subject :> ")
 	msgSubject, _ := reader.ReadString('\n')
 	mailOpts.Subject = strings.TrimSpace(msgSubject)
 
-	fmt.Print("Enter from name :> ")
+	fmt.Print("\nEnter from name :> ")
 	fromName, _ := reader.ReadString('\n')
 	mailOpts.FromName = strings.TrimSpace(fromName)
 
@@ -135,7 +135,7 @@ func Mailer() {
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionShowCount(),
 		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetDescription("Sending emails..."),
+		progressbar.OptionSetDescription("\nSending emails..."),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "[green]=[reset]",
 			SaucerHead:    "[green]>[reset]",

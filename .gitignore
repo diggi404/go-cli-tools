@@ -3,6 +3,7 @@
 .DS_Store
 .vscode
 test.go
+test2.go
 generated_ips.txt
 ip_scans
 ip_list

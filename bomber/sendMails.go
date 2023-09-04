@@ -12,24 +12,24 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SingleBomb(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *gomail.SendCloser, msgOptions *gomail.Message, smtpCreds *SmtpOpts, sucBar *progressbar.ProgressBar) {
+func SingleBomb(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *gomail.SendCloser, msgOptions *gomail.Message, smtpCreds *SmtpOpts, pgBar *progressbar.ProgressBar) {
 	defer wg.Done()
 	article := <-articleChunks
 	rounds := <-workingChan
 	for range rounds {
 		if article.Author == "" {
-			article.Author = "Henry Sams"
+			article.Author = "Fabrizio Romano"
 		}
 		rand.New(rand.NewSource(time.Now().UnixNano()))
 		randomInt := rand.Intn(1000)
 		randNum := strconv.Itoa(randomInt)
 		mutex.Lock()
 		msgOptions.SetAddressHeader("From", smtpCreds.Username, article.Author)
-		msgOptions.SetHeader("Subject", article.Title+randNum)
+		msgOptions.SetHeader("Subject", article.Title+" "+randNum)
 		msgOptions.SetBody("text/plain", article.Description)
 		err := gomail.Send(*smtpConn, msgOptions)
 		if err == nil {
-			sucBar.Add(1)
+			pgBar.Add(1)
 		}
 		mutex.Unlock()
 	}
@@ -41,11 +41,11 @@ func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, 
 	emailList := <-emailChunks
 	for _, email := range emailList {
 		pgBarDescription := fmt.Sprintf("%s ->", email)
-		sucBar := MakePgBar(numBombs, pgBarDescription)
+		pgBar := MakePgBar(numBombs, pgBarDescription)
 		for i := 0; i < numBombs; i++ {
 			article := <-articleChunks
 			if article.Author == "" {
-				article.Author = "Henry Sams"
+				article.Author = "Elon Musk"
 			}
 			rand.New(rand.NewSource(time.Now().UnixNano()))
 			randomInt := rand.Intn(1000)
@@ -58,7 +58,7 @@ func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, 
 			msgOptions.SetBody("text/plain", article.Description)
 			err := gomail.Send(*smtpConn, msgOptions)
 			if err == nil {
-				sucBar.Add(1)
+				pgBar.Add(1)
 			}
 			mutex.Unlock()
 		}
@@ -66,7 +66,7 @@ func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, 
 }
 
 func MakePgBar(numBombs int, description string) *progressbar.ProgressBar {
-	sucBar := progressbar.NewOptions(numBombs,
+	pgBar := progressbar.NewOptions(numBombs,
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionShowCount(),
 		progressbar.OptionEnableColorCodes(true),
@@ -80,5 +80,5 @@ func MakePgBar(numBombs int, description string) *progressbar.ProgressBar {
 		}),
 	)
 
-	return sucBar
+	return pgBar
 }
