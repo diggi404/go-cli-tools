@@ -18,10 +18,10 @@ func LookupDomain(creds []string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var host string
+	var host []string
 	for _, v := range record {
-		host = v.Host
+		host = append(host, v.Host)
 	}
-	newHost := strings.TrimSuffix(host, ".")
+	newHost := strings.TrimSuffix(host[0], ".")
 	return []string{username, password, newHost}, nil
 }

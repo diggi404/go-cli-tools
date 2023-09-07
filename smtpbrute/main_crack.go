@@ -22,17 +22,14 @@ func BruteSmtp() {
 	fmt.Println("\nSelect your wordlist: ")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
-			{Name: "Mail Access Wordlist", Patterns: []string{"*.txt"}, CaseFold: false},
+			{Patterns: []string{"*.txt"}, CaseFold: false},
 		})
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 	}
-	fmt.Printf("\nfilePath: %v\n", filePath)
 	wordList, _ := fileutil.ReadFromFile(filePath)
 	testEmail = strings.TrimSpace(testEmail)
-	red := color.New(color.FgRed).PrintlnFunc()
-	red("\nSMTP Host\t\tPort\t\tUsername\t\tPassword")
-	red("-------------------------------------------------------------------")
+	color.New(color.FgHiMagenta).Printf("\nTotal Wordlist: %d\n\n", len(wordList))
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -69,8 +66,7 @@ func BruteSmtp() {
 		}
 		wordListChunks <- wordList[i:end]
 	}
-	// fmt.Printf("len(wordListsChunk): %v\n", len(wordListChunks))
 	close(wordListChunks)
 	wg.Wait()
-	fmt.Println("\nall checks are done!")
+	fmt.Println("\nall done!")
 }

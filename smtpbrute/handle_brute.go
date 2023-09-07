@@ -20,23 +20,20 @@ func ProcessCredentials(wordList <-chan []string, file *os.File, testEmail strin
 			smtpCreds, err := LookupDomain(splitedCreds)
 			if err == nil {
 				results, err := ConnectSMTP(smtpCreds, testEmail)
+				mutex.Lock()
 				if err == nil {
-					mutex.Lock()
-					*totalChecks += 1
+					*totalChecks++
 					blue("%d: -> ", *totalChecks)
 					host, port, username, password := results[2], results[3], results[0], results[1]
 					green("%s\t%s\t%s\t%s\n", host, port, username, password)
-					finalCreds := fmt.Sprintf("%s:%s => %s:%s\n", host, port, username, password)
+					finalCreds := fmt.Sprintf("%s,%s,%s,%s\n", host, port, username, password)
 					file.WriteString(finalCreds)
-					mutex.Unlock()
 				} else {
-					mutex.Lock()
-					*totalChecks += 1
+					*totalChecks++
 					blue("%d: -> ", *totalChecks)
 					red("%s\n", err)
-					mutex.Unlock()
 				}
-
+				mutex.Unlock()
 			}
 
 		}

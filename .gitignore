@@ -12,3 +12,4 @@ dist/
 .goreleaser.yaml
 smtps
 cpanel_logs
+cracked_smtps
