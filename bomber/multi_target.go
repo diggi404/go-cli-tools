@@ -3,6 +3,7 @@ package bomber
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -11,7 +12,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, msgOptions *gomail.Message, smtpCreds SmtpOpts, numBombs int, smtpConnIndex *int) {
+func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, msgOptions *gomail.Message, smtpCreds SmtpOpts, numBombs int, smtpConn *SmtpConnOpts) {
 	defer wg.Done()
 
 	emailList := <-emailChunks
@@ -32,17 +33,27 @@ func MultiTargetBomb(articleChunks <-chan Article, emailChunks <-chan []string, 
 			msgOptions.SetHeader("To", email)
 			msgOptions.SetHeader("Subject", subject)
 			msgOptions.SetBody("text/plain", article.Description)
-			for i, conn := range smtpCreds.Conns {
-				if i == *smtpConnIndex {
-					err := gomail.Send(conn, msgOptions)
-					if err == nil {
-						pgBar.Add(1)
-						break
+			for {
+				err := gomail.Send(smtpConn.Conn, msgOptions)
+				if err == nil {
+					pgBar.Add(1)
+					smtpConn.NewConn = false
+					break
+				} else if err != nil && smtpConn.NewConn {
+					color.New(color.FgRed).Printf("\nThe SMTP has been rate limited. Try again later!\n")
+					os.Exit(1)
+				} else {
+					color.New(color.FgRed).Printf("\nerr: %v\n", err)
+					color.New(color.FgGreen).Printf("\nusing a different Connection\n")
+					conn, err := CreateSMTPConn(smtpCreds)
+					if err != nil {
+						color.New(color.FgRed).Printf("\nError creating a new SMTP connection!\n")
+						os.Exit(1)
 					} else {
-						color.New(color.FgRed).Printf("\nerr: %v\n", err)
-						*smtpConnIndex++
-						color.New(color.FgGreen).Printf("\nusing a different Connection\n")
+						smtpConn.Conn = conn
+						smtpConn.NewConn = true
 					}
+
 				}
 			}
 			mutex.Unlock()

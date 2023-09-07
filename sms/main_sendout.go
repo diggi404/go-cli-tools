@@ -2,6 +2,6 @@ package sms
 
 import "fmt"
 
-func SmsSendout() {
+func Sendout() {
 	fmt.Println("This is Sms Sendout")
 }

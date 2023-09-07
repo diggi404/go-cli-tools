@@ -44,9 +44,9 @@ func Mailer() {
 		fmt.Println("invalid input!")
 		return
 	}
-	splitedCreds := strings.Split(smtpCreds, ",")
+	splittedCreds := strings.Split(smtpCreds, ",")
 
-	for _, creds := range splitedCreds {
+	for _, creds := range splittedCreds {
 		trimedCreds := strings.TrimSpace(creds)
 		if len(trimedCreds) != 0 {
 			filteredCreds = append(filteredCreds, trimedCreds)
@@ -191,7 +191,7 @@ func Mailer() {
 
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go SendMail(emailListChunks, &wg, &mutex, mailOpts, &smtpConn, msgOpts, bar, &results)
+		go SendMail(emailListChunks, &wg, &mutex, &smtpConn, msgOpts, bar, &results)
 	}
 
 	for i := 0; i < len(emailList); i += chunkSize {

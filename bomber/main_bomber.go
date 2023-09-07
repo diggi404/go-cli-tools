@@ -2,6 +2,7 @@ package bomber
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"go_cli/fileutil"
 	"os"
@@ -20,7 +21,12 @@ type SmtpOpts struct {
 	Username string
 	Password string
 	Default  bool
-	Conns    []gomail.SendCloser
+}
+
+type SmtpConnOpts struct {
+	Conn      gomail.SendCloser
+	NumErrors int
+	NewConn   bool
 }
 
 func SmtpConnClose(conns []gomail.SendCloser) {
@@ -108,27 +114,20 @@ func Bomber() {
 
 	fmt.Println("\nverifying SMTP Credentials...")
 	port, _ := strconv.Atoi(smtpCreds.Port)
-	for i := 0; i < 10; i++ {
-		dialer := gomail.NewDialer(smtpCreds.Host, port, smtpCreds.Username, smtpCreds.Password)
-		conn, err := dialer.Dial()
-		if err != nil && i == 0 {
-			if smtpCreds.Default {
-				fmt.Printf("err: %v\n", err)
-				fmt.Println("The default SMTP Credentials is dead. Please use your own SMTP.")
-			} else {
-				fmt.Printf("err: %v\n", err)
-			}
-			return
-		} else if err != nil && i != 0 {
-			return
-		} else if err == nil && i == 0 {
-			color.New(color.FgGreen).Printf("\nSMTP connection has been established.\n")
-			fmt.Println("\ncreating multiple connections for mass bombing...")
+	dialer := gomail.NewDialer(smtpCreds.Host, port, smtpCreds.Username, smtpCreds.Password)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	conn, err := dialer.Dial()
+	if err != nil {
+		if smtpCreds.Default {
+			fmt.Printf("err: %v\n", err)
+			fmt.Println("The default SMTP Credentials is dead. Please use your own SMTP.")
+		} else {
+			fmt.Printf("err: %v\n", err)
 		}
-		smtpCreds.Conns = append(smtpCreds.Conns, conn)
+		return
 	}
-	color.New(color.FgGreen).Printf("\nall needed connections established :)\n")
-	defer SmtpConnClose(smtpCreds.Conns)
+	smtpConn := SmtpConnOpts{Conn: conn, NewConn: true}
+	color.New(color.FgGreen).Printf("\nSMTP connection has been established.\n")
 
 	fmt.Print("\nis your target more than 1? Y/n :> ")
 	rawNumTarget, err := reader.ReadString('\n')
@@ -181,7 +180,6 @@ func Bomber() {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	msgOpts := gomail.NewMessage()
-	smtpConnIndex := 0
 
 	pgBar := MakePgBar(numBombs, "Bombing... ->")
 
@@ -219,10 +217,16 @@ func Bomber() {
 		for i := 0; i < numBombs; i++ {
 			distSlice[i] = i
 		}
-
-		for i := 0; i < maxWorkers; i++ {
-			wg.Add(1)
-			go SingleBomb(articleChunks, workingChan, &wg, &mutex, msgOpts, smtpCreds, pgBar, &smtpConnIndex)
+		if smtpCreds.Host == "smtp.gmail.com" {
+			for i := 0; i < maxWorkers; i++ {
+				wg.Add(1)
+				go HandleGmailSMTP(articleChunks, workingChan, &wg, &mutex, msgOpts, smtpCreds, pgBar, &smtpConn)
+			}
+		} else {
+			for i := 0; i < maxWorkers; i++ {
+				wg.Add(1)
+				go SingleBomb(articleChunks, workingChan, &wg, &mutex, msgOpts, smtpCreds, pgBar, &smtpConn)
+			}
 		}
 
 		articles := body.Articles
@@ -258,7 +262,7 @@ func Bomber() {
 
 		for i := 0; i < maxWorkers; i++ {
 			wg.Add(1)
-			go MultiTargetBomb(articleChunks, emailChunks, &wg, &mutex, msgOpts, smtpCreds, numBombs, &smtpConnIndex)
+			go MultiTargetBomb(articleChunks, emailChunks, &wg, &mutex, msgOpts, smtpCreds, numBombs, &smtpConn)
 		}
 
 		for i := 0; i < len(targetList); i += chunkSize {

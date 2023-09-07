@@ -15,7 +15,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// PrintMenu Main Menu Function... CLears the terminal before printing the Menu.
+// PrintMenu Main Menu Function... Clears the terminal before printing the Menu.
 func PrintMenu(items []string, selectedIndex int) {
 	fmt.Print("\033[H\033[2J")
 	fmt.Println("Select an option using the arrow keys (Up/Down) and press Enter:")
@@ -46,7 +46,7 @@ func MenuSelection(selectedOption int) {
 	} else if selectedOption == 2 {
 		mailer.Mailer()
 	} else if selectedOption == 3 {
-		sms.SmsSendout()
+		sms.Sendout()
 	} else if selectedOption == 4 {
 		bomber.Bomber()
 	} else if selectedOption == 5 {
@@ -76,7 +76,7 @@ func AfterGenIP(choice, filePath string) {
 	case 3:
 		mailer.Mailer()
 	case 4:
-		sms.SmsSendout()
+		sms.Sendout()
 	case 5:
 		bomber.Bomber()
 	case 6:

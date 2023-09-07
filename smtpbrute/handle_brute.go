@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func ProcessCredentials(wordList <-chan []string, file *os.File, index int, testEmail string, mutex *sync.Mutex, wg *sync.WaitGroup, totalChecks *int) {
+func ProcessCredentials(wordList <-chan []string, file *os.File, testEmail string, mutex *sync.Mutex, wg *sync.WaitGroup, totalChecks *int) {
 	defer wg.Done()
 	wordListChunks := <-wordList
 	green := color.New(color.FgGreen).PrintfFunc()

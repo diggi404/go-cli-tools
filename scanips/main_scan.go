@@ -38,10 +38,10 @@ func ScanIPs(filePath ...string) {
 	// filter all entered ports
 	ports := strings.Split(userPort, ",")
 	for _, port := range ports {
-		portTrimed := strings.TrimSpace(port)
-		if len(portTrimed) != 0 {
+		portTrimmed := strings.TrimSpace(port)
+		if len(portTrimmed) != 0 {
 
-			filteredPorts = append(filteredPorts, portTrimed)
+			filteredPorts = append(filteredPorts, portTrimmed)
 		}
 	}
 
