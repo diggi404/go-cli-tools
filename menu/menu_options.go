@@ -70,7 +70,15 @@ func AfterGenIP(choice, filePath string) {
 	fmt.Scanln(&selectedOption)
 	switch selectedOption {
 	case 1:
-		bulkips.GenIP()
+		filePath, err := bulkips.GenIP()
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			AfterGenIP("", "")
+		}
+		var input string
+		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
+		fmt.Scanln(&input)
+		AfterGenIP(input, filePath)
 	case 2:
 		scanips.ScanIPs()
 	case 3:

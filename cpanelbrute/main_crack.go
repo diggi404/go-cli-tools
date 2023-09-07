@@ -63,7 +63,11 @@ func CpanelBrute() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Domain", "Username", "Password"})
 
-	file := fileutil.WriteToFile("cpanel_logs", "valid_logs.txt")
+	file, err := fileutil.WriteToFile("cpanel_logs", "valid_logs.txt")
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	}
 
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)

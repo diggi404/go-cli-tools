@@ -1,19 +1,19 @@
 package fileutil
 
 import (
-	"fmt"
 	"os"
 )
 
-func WriteToFile(dirName, fileName string) *os.File {
+func WriteToFile(dirName, fileName string) (*os.File, error) {
 	dirPath, err := SetupDir(dirName)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		return nil, err
+
 	}
 	filePath := dirPath + "/" + fileName
 	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		return nil, err
 	}
-	return file
+	return file, nil
 }

@@ -45,7 +45,11 @@ func BruteSmtp() {
 	}
 	wordListChunks := make(chan []string, chunkSize)
 
-	file := fileutil.WriteToFile("cracked_smtps", "hits.txt")
+	file, err := fileutil.WriteToFile("cracked_smtps", "hits.txt")
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return
+	}
 	defer file.Close()
 
 	// spawn goroutines which will be reading data from the ipChunks channel concurrently.
