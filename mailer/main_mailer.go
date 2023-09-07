@@ -16,6 +16,13 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+type SmtpOpts struct {
+	Host     string
+	Port     string
+	Username string
+	Password string
+}
+
 type MailOut struct {
 	Subject    string
 	FromEmail  string
@@ -29,6 +36,20 @@ type MailOutResults struct {
 	Fails   int
 }
 
+type SmtpConnOpts struct {
+	Conn      gomail.SendCloser
+	NumErrors int
+	NewConn   bool
+}
+
+func SmtpConnClose(conns []gomail.SendCloser) {
+	for _, conn := range conns {
+		if conn != nil {
+			conn.Close()
+		}
+	}
+}
+
 func Mailer() {
 	var (
 		filteredCreds []string
@@ -36,15 +57,15 @@ func Mailer() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD")
 	fmt.Print(">>> ")
-	smtpCreds, err := reader.ReadString('\n')
+	smtpCredsStr, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
-	} else if smtpCreds == "\n" {
+	} else if smtpCredsStr == "\n" {
 		fmt.Println("invalid input!")
 		return
 	}
-	splittedCreds := strings.Split(smtpCreds, ",")
+	splittedCreds := strings.Split(smtpCredsStr, ",")
 
 	for _, creds := range splittedCreds {
 		trimedCreds := strings.TrimSpace(creds)
@@ -59,13 +80,20 @@ func Mailer() {
 	port, _ := strconv.Atoi(portStr)
 	dailer := gomail.NewDialer(host, port, username, password)
 	dailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	smtpConn, err := dailer.Dial()
+	conn, err := dailer.Dial()
 	if err != nil {
 		errMsg := fmt.Sprintf("err: %v\n", err)
 		color.HiRed(errMsg)
 		return
 	}
-	defer smtpConn.Close()
+	smtpCreds := SmtpOpts{
+		Host:     host,
+		Port:     portStr,
+		Username: username,
+		Password: password,
+	}
+	smtpConn := SmtpConnOpts{Conn: conn, NewConn: true}
+	defer smtpConn.Conn.Close()
 
 	color.New(color.FgGreen).Printf("\nSMTP connection established successfully :)\n")
 	mailOpts := MailOut{FromEmail: username}
@@ -85,7 +113,7 @@ func Mailer() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("\nTotal Emails: %v\n", len(emailList))
+	color.New(color.FgHiMagenta).Printf("\nTotal Emails: %v\n", len(emailList))
 
 	var rawMsgType string
 	fmt.Print("\nWhat type of content are you sending? plain/html :> ")
@@ -152,6 +180,7 @@ func Mailer() {
 		fmt.Println("invalid input!")
 		return
 	}
+	fmt.Println()
 	mailOpts.FromName = strings.TrimSpace(fromName)
 
 	maxWorkers := 1000
@@ -176,7 +205,6 @@ func Mailer() {
 			BarEnd:        "]",
 		}),
 	)
-	results := MailOutResults{}
 
 	emailListChunks := make(chan []string, chunkSize)
 
@@ -189,9 +217,16 @@ func Mailer() {
 		msgOpts.SetBody("text/html", mailOpts.Message)
 	}
 
-	for i := 0; i < maxWorkers; i++ {
-		wg.Add(1)
-		go SendMail(emailListChunks, &wg, &mutex, &smtpConn, msgOpts, bar, &results)
+	if smtpCreds.Host == "smtp.gmail.com" {
+		for i := 0; i < maxWorkers; i++ {
+			wg.Add(1)
+			go HandleGmailSMTP(emailListChunks, &wg, &mutex, &smtpConn, smtpCreds, msgOpts, bar)
+		}
+	} else {
+		for i := 0; i < maxWorkers; i++ {
+			wg.Add(1)
+			go SendMail(emailListChunks, &wg, &mutex, &smtpConn, smtpCreds, msgOpts, bar)
+		}
 	}
 
 	for i := 0; i < len(emailList); i += chunkSize {
@@ -203,9 +238,5 @@ func Mailer() {
 	}
 	close(emailListChunks)
 	wg.Wait()
-	successMsg := fmt.Sprintf("\n\n\t\t\tSent: %d", results.Success)
-	failMsg := fmt.Sprintf("\t\t\tFails: %d", results.Fails)
-	color.New(color.FgGreen).Println(successMsg)
-	color.New(color.FgRed).Println(failMsg)
-	fmt.Println("\nall done.")
+	fmt.Println("\n\nall done.")
 }

@@ -29,14 +29,6 @@ type SmtpConnOpts struct {
 	NewConn   bool
 }
 
-func SmtpConnClose(conns []gomail.SendCloser) {
-	for _, conn := range conns {
-		if conn != nil {
-			conn.Close()
-		}
-	}
-}
-
 func Bomber() {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -119,14 +111,15 @@ func Bomber() {
 	conn, err := dialer.Dial()
 	if err != nil {
 		if smtpCreds.Default {
-			fmt.Printf("err: %v\n", err)
-			fmt.Println("The default SMTP Credentials is dead. Please use your own SMTP.")
+			color.New(color.FgRed).Println(err)
+			color.New(color.FgRed).Println("The default SMTP is dead. Restart the tool with yours.")
 		} else {
-			fmt.Printf("err: %v\n", err)
+			color.New(color.FgRed).Println(err)
 		}
 		return
 	}
 	smtpConn := SmtpConnOpts{Conn: conn, NewConn: true}
+	defer smtpConn.Conn.Close()
 	color.New(color.FgGreen).Printf("\nSMTP connection has been established.\n")
 
 	fmt.Print("\nis your target more than 1? Y/n :> ")

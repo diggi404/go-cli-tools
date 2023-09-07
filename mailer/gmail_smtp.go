@@ -1,9 +1,7 @@
-package bomber
+package mailer
 
 import (
-	"math/rand"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,23 +11,14 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func HandleGmailSMTP(articleChunks <-chan Article, workingChan <-chan []int, wg *sync.WaitGroup, mutex *sync.Mutex, msgOptions *gomail.Message, smtpCreds SmtpOpts, pgBar *progressbar.ProgressBar, smtpConn *SmtpConnOpts) {
+func HandleGmailSMTP(emailChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, smtpConn *SmtpConnOpts, smtpCreds SmtpOpts, msgOpts *gomail.Message, pgBar *progressbar.ProgressBar) {
 	defer wg.Done()
-	article := <-articleChunks
-	rounds := <-workingChan
-	for range rounds {
-		if article.Author == "" {
-			article.Author = "Fabrizio Romano"
-		}
-		rand.New(rand.NewSource(time.Now().UnixNano()))
-		randomInt := rand.Intn(1000)
-		randNum := strconv.Itoa(randomInt)
+	emailList := <-emailChunks
+	for _, email := range emailList {
 		mutex.Lock()
-		msgOptions.SetAddressHeader("From", smtpCreds.Username, article.Author)
-		msgOptions.SetHeader("Subject", article.Title+" "+randNum)
-		msgOptions.SetBody("text/plain", article.Description)
+		msgOpts.SetHeader("To", email)
 		for {
-			err := gomail.Send(smtpConn.Conn, msgOptions)
+			err := gomail.Send(smtpConn.Conn, msgOpts)
 			if err == nil {
 				pgBar.Add(1)
 				smtpConn.NewConn = false
@@ -73,5 +62,6 @@ func HandleGmailSMTP(articleChunks <-chan Article, workingChan <-chan []int, wg 
 			}
 		}
 		mutex.Unlock()
+
 	}
 }
