@@ -5,6 +5,7 @@ import (
 	"go_cli/fileutil"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/ncruces/zenity"
@@ -45,7 +46,9 @@ func BruteSmtp() {
 	}
 	wordListChunks := make(chan []string, chunkSize)
 
-	file, err := fileutil.WriteToFile("cracked_smtps", "hits.txt")
+	currentTime := time.Now().Unix()
+	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
+	file, err := fileutil.WriteToFile("cracked_smtps", fileName)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return

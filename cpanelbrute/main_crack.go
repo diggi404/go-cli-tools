@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ncruces/zenity"
 	"github.com/olekukonko/tablewriter"
@@ -63,7 +64,9 @@ func CpanelBrute() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Domain", "Username", "Password"})
 
-	file, err := fileutil.WriteToFile("cpanel_logs", "valid_logs.txt")
+	currentTime := time.Now().Unix()
+	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
+	file, err := fileutil.WriteToFile("cpanel_logs", fileName)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
