@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/ncruces/zenity"
 	"github.com/olekukonko/tablewriter"
 )
@@ -42,13 +43,12 @@ func CpanelBrute() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("\nfilePath: %v\n", filePath)
 	wordlist, err := fileutil.ReadFromFile(filePath)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
-	fmt.Printf("\nTotal Credentials: %v\n", len(wordlist))
+	color.New(color.FgHiMagenta).Printf("\nTotal Credentials: %v\n", len(wordlist))
 
 	maxWorkers := 100
 	chunkSize := len(wordlist) / maxWorkers
@@ -63,6 +63,7 @@ func CpanelBrute() {
 	var wg sync.WaitGroup
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Domain", "Username", "Password"})
+	totalChecks := 0
 
 	currentTime := time.Now().Unix()
 	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
@@ -71,10 +72,11 @@ func CpanelBrute() {
 		fmt.Printf("err: %v\n", err)
 		return
 	}
+	fmt.Println()
 
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go HandleBrute(trimedTarget, wordlistChunks, &wg, &mutex, table, file)
+		go HandleBrute(trimedTarget, wordlistChunks, &wg, &mutex, table, file, &totalChecks)
 	}
 
 	for i := 0; i < len(wordlist); i += chunkSize {
@@ -84,8 +86,7 @@ func CpanelBrute() {
 		}
 		wordlistChunks <- wordlist[i:end]
 	}
-	fmt.Printf("len(wordlistChunks): %v\n", len(wordlistChunks))
 	close(wordlistChunks)
 	wg.Wait()
-	fmt.Println("\nall checks are done!")
+	fmt.Println("\nall done!")
 }

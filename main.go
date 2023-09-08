@@ -3,47 +3,37 @@ package main
 import (
 	"fmt"
 	"go_cli/menu"
-	"log"
-	"os"
 
-	"github.com/eiannone/keyboard"
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	godotenv.Load()
-	options := []string{"Bulk Range IP Generator", "Mass IP Scanner", "Mass Mailer", "SMS Sender", "Email Bomber", "SMTP Cracker", "CPanel Crack", "Exit"}
-	selectedIndex := 0
-	var selectedOption int
+	art := `
+	_____  ___   _______ ___________ _______  ___           __       ________ ___________       ________ ____  ____  __ ___________ _______  
+	(\"   \|"  \ /"     "("     _   "|   _  "\|"  |         /""\     /"       ("     _   ")     /"       ("  _||_ " ||" ("     _   "/"     "| 
+	|.\\   \    (: ______))__/  \\__/(. |_)  :||  |        /    \   (:   \___/ )__/  \\__/     (:   \___/|   (  ) : |||  )__/  \\__(: ______) 
+	|: \.   \\  |\/    |     \\_ /   |:     \/|:  |       /' /\  \   \___  \      \\_ /         \___  \  (:  |  | . )|:  |  \\_ /   \/    |   
+	|.  \    \. |// ___)_    |.  |   (|  _  \\ \  |___   //  __'  \   __/  \\     |.  |          __/  \\  \\ \__/ // |.  |  |.  |   // ___)_  
+	|    \    \ (:      "|   \:  |   |: |_)  :( \_|:  \ /   /  \\  \ /" \   :)    \:  |         /" \   :) /\\ __ //\ /\  |\ \:  |  (:      "| 
+	 \___|\____\)\_______)    \__|   (_______/ \_______(___/    \___(_______/      \__|        (_______/ (__________(__\_|_) \__|   \_______) 																																																																							
+	 `
+	color.New(color.FgHiRed).Println(art)
 
-	err := keyboard.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
+	menuOpts := `
+	1.	Bulk Range IP Generator				2.	Mass IP Scanner
 
-	for {
-		menu.PrintMenu(options, selectedIndex)
+	3.	Mass Mailer					4.	Email Bomber
 
-		_, key, err := keyboard.GetKey()
-		if err != nil {
-			log.Fatal(err)
-		}
+	5.	SMTP Cracker					6.	CPanel Cracker
 
-		if key == keyboard.KeyEnter {
-			if selectedIndex == len(options)-1 {
-				fmt.Println("Exiting Program...")
-				os.Exit(0)
-			} else {
-				selectedOption = selectedIndex
-				keyboard.Close()
-				break
-			}
-		} else if key == keyboard.KeyArrowUp {
-			selectedIndex = (selectedIndex - 1 + len(options)) % len(options)
-		} else if key == keyboard.KeyArrowDown {
-			selectedIndex = (selectedIndex + 1) % len(options)
-		}
-	}
-	menu.MenuSelection(selectedOption)
-	fmt.Printf("selectedOption: %v\n", selectedOption)
+	7.	Exit
+
+	`
+	color.New(color.FgGreen).Println(menuOpts)
+	var choice int
+	fmt.Print("\n\nEnter your option :> ")
+	fmt.Scanln(&choice)
+	menu.MenuSelection(choice)
 }

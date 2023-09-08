@@ -7,7 +7,6 @@ import (
 	"go_cli/cpanelbrute"
 	"go_cli/mailer"
 	"go_cli/scanips"
-	"go_cli/sms"
 	"go_cli/smtpbrute"
 	"os"
 	"strings"
@@ -31,7 +30,7 @@ func PrintMenu(items []string, selectedIndex int) {
 
 // MenuSelection Handles user's selection from the Main Menu i.e. When the app is launched.
 func MenuSelection(selectedOption int) {
-	if selectedOption == 0 {
+	if selectedOption == 1 {
 		filePath, err := bulkips.GenIP()
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
@@ -41,12 +40,10 @@ func MenuSelection(selectedOption int) {
 		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath)
-	} else if selectedOption == 1 {
-		scanips.ScanIPs()
 	} else if selectedOption == 2 {
-		mailer.Mailer()
+		scanips.ScanIPs()
 	} else if selectedOption == 3 {
-		sms.Sendout()
+		mailer.Mailer()
 	} else if selectedOption == 4 {
 		bomber.Bomber()
 	} else if selectedOption == 5 {
@@ -84,12 +81,10 @@ func AfterGenIP(choice, filePath string) {
 	case 3:
 		mailer.Mailer()
 	case 4:
-		sms.Sendout()
-	case 5:
 		bomber.Bomber()
-	case 6:
+	case 5:
 		smtpbrute.BruteSmtp()
-	case 7:
+	case 6:
 		cpanelbrute.CpanelBrute()
 	default:
 		os.Exit(0)

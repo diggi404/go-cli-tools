@@ -41,11 +41,12 @@ func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg
 		mutex.Lock()
 		if len(openPorts) != 0 {
 			*totalChecks++
+			openPortStr := fmt.Sprintf("%v", openPorts)
+			portServiceStr := fmt.Sprintf("%v", portServices)
 			color.New(color.FgBlue).Printf("%d: -> ", *totalChecks)
-			color.New(color.FgGreen).Printf("%s\t%s\t%s\n", ip, openPorts, portServices)
+			color.New(color.FgGreen).Printf("%s\t%s\t%s\n", ip, openPortStr, portServiceStr)
 		} else {
 			*totalChecks++
-
 		}
 		mutex.Unlock()
 	}

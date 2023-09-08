@@ -1,22 +1,21 @@
 package fileutil
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func SetupDir(dirName string) (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("Error:", err)
 		return "", err
 	}
-	dirPath := cwd + "/" + dirName
+	dirPath := filepath.Join(cwd, dirName)
 	_, err = os.Stat(dirPath)
 	if err == nil {
 		return dirPath, nil
 	} else if os.IsNotExist(err) {
-		err := os.Mkdir(dirPath, 0755)
+		err := os.MkdirAll(dirPath, 0755)
 		if err != nil {
 			return "", err
 		}
