@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go_cli/menu"
+	"strconv"
 
 	"github.com/fatih/color"
 	"github.com/joho/godotenv"
@@ -32,8 +33,13 @@ func main() {
 
 	`
 	color.New(color.FgGreen).Println(menuOpts)
-	var choice int
+	var choiceStr string
 	fmt.Print("\n\nEnter your option :> ")
-	fmt.Scanln(&choice)
+	fmt.Scanln(&choiceStr)
+	choice, err := strconv.Atoi(choiceStr)
+	if err != nil {
+		fmt.Println("invalid choice!")
+		return
+	}
 	menu.MenuSelection(choice)
 }
