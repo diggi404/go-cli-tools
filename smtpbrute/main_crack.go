@@ -12,20 +12,22 @@ import (
 )
 
 func BruteSmtp() {
+	takeInput := color.New(color.FgHiBlue).PrintFunc()
+	errMsg := color.New(color.FgRed).PrintfFunc()
 	var testEmail string
-	fmt.Print("\nEnter test email :> ")
+	takeInput("\nEnter test email :> ")
 	fmt.Scanln(&testEmail)
 	if len(testEmail) == 0 {
-		fmt.Println("invalid input!")
+		errMsg("invalid input. Exiting Program...\n")
 		return
 	}
-	fmt.Println("\nSelect your wordlist: ")
+	takeInput("\nSelect your wordlist: \n")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
 		})
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 	}
 	wordList, _ := fileutil.ReadFromFile(filePath)
 	testEmail = strings.TrimSpace(testEmail)
@@ -47,7 +49,7 @@ func BruteSmtp() {
 	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
 	file, err := fileutil.WriteToFile("cracked_smtps", fileName)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	}
 	defer file.Close()
@@ -68,5 +70,5 @@ func BruteSmtp() {
 	}
 	close(wordListChunks)
 	wg.Wait()
-	fmt.Println("\nall done!")
+	color.New(color.FgMagenta).Println("\nall done. Thanks for using the tool.")
 }

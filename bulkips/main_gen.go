@@ -7,19 +7,22 @@ import (
 	"net"
 	"os"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 // GenIP main function to generate the bulk IPs.
 func GenIP() (string, error) {
 	var ip1, ip2 string
-	fmt.Print("\n\nEnter the starting IP: ")
+	takeInput := color.New(color.FgHiBlue).PrintFunc()
+	takeInput("\n\nEnter the starting IP: ")
 	fmt.Scanln(&ip1)
 	startIP := net.ParseIP(ip1).To4()
 	if startIP == nil {
 		err := errors.New("invalid IP address")
 		return "", err
 	}
-	fmt.Print("\nEnter the ending IP: ")
+	takeInput("\nEnter the ending IP: ")
 	fmt.Scanln(&ip2)
 	endIP := net.ParseIP(ip2).To4()
 	if endIP == nil {
@@ -35,7 +38,6 @@ func GenIP() (string, error) {
 	// prepare the result file's directory and file.
 	dirPath, err := CheckDir()
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return "", err
 	}
 	currentTime := time.Now().Unix()
@@ -43,7 +45,6 @@ func GenIP() (string, error) {
 	filePath := dirPath + "/" + fileName
 	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
 		return "", err
 	}
 	defer file.Close()
@@ -53,7 +54,6 @@ func GenIP() (string, error) {
 		ipStr := ip.String() + "\n"
 		_, err := file.WriteString(ipStr)
 		if err != nil {
-			fmt.Println("Error writing to file:", err)
 			return "", err
 		}
 		time.Sleep(time.Microsecond)

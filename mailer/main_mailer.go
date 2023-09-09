@@ -54,15 +54,17 @@ func Mailer() {
 	var (
 		filteredCreds []string
 	)
+	takeInput := color.New(color.FgHiBlue).PrintFunc()
+	errMsg := color.New(color.FgRed).PrintfFunc()
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD")
-	fmt.Print(">>> ")
+	takeInput("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
+	takeInput(">>> ")
 	smtpCredsStr, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if smtpCredsStr == "\n" {
-		fmt.Println("invalid input!")
+		errMsg("invalid input. Exiting Program...\n")
 		return
 	}
 	splittedCreds := strings.Split(smtpCredsStr, ",")
@@ -74,7 +76,7 @@ func Mailer() {
 		}
 	}
 
-	fmt.Println("\nverifying SMTP credentials...")
+	takeInput("\nverifying SMTP credentials...\n")
 
 	host, portStr, username, password := filteredCreds[0], filteredCreds[1], filteredCreds[2], filteredCreds[3]
 	port, _ := strconv.Atoi(portStr)
@@ -82,8 +84,7 @@ func Mailer() {
 	dailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	conn, err := dailer.Dial()
 	if err != nil {
-		errMsg := fmt.Sprintf("err: %v\n", err)
-		color.HiRed(errMsg)
+		errMsg("err: %v\n", err)
 		return
 	}
 	smtpCreds := SmtpOpts{
@@ -98,48 +99,48 @@ func Mailer() {
 	color.New(color.FgGreen).Printf("\nSMTP connection established successfully :)\n")
 	mailOpts := MailOut{FromEmail: username}
 
-	fmt.Println("\nSelect your email list: ")
+	takeInput("\nSelect your email list: \n")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
 		})
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	}
 
 	emailList, err := fileutil.ReadFromFile(filePath)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	}
 	color.New(color.FgHiMagenta).Printf("\nTotal Emails: %v\n", len(emailList))
 
 	var rawMsgType string
-	fmt.Print("\nWhat type of content are you sending? plain/html :> ")
+	takeInput("\nWhat type of content are you sending? plain/html :> ")
 	fmt.Scanln(&rawMsgType)
 	if len(rawMsgType) == 0 {
-		fmt.Println("invalid choice!")
+		errMsg("invalid choice. Exiting Program...\n")
 		return
 	}
 	msgType := strings.ToLower(strings.TrimSpace(rawMsgType))
 
 	if msgType == "html" || strings.Contains(msgType, "html") {
 
-		fmt.Println("\nSelect your html letter: ")
+		takeInput("\nSelect your html letter: \n")
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.html"}, CaseFold: false},
 			})
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		}
 
 		htmlByte, err := os.ReadFile(filePath)
 
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		}
 
@@ -147,37 +148,37 @@ func Mailer() {
 		mailOpts.IsMsgPlain = false
 	} else {
 
-		fmt.Print("\nEnter your Message :> ")
+		takeInput("\nEnter your Message :> ")
 		msg, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		} else if msg == "\n" {
-			fmt.Println("invalid input!")
+			errMsg("invalid input. Exiting Program...\n")
 			return
 		}
 		mailOpts.Message = msg
 		mailOpts.IsMsgPlain = true
 	}
 
-	fmt.Print("\nEnter Message Subject :> ")
+	takeInput("\nEnter Message Subject :> ")
 	msgSubject, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if msgSubject == "\n" {
-		fmt.Println("invalid input!")
+		errMsg("invalid input. Exiting Program...\n")
 		return
 	}
 	mailOpts.Subject = strings.TrimSpace(msgSubject)
 
-	fmt.Print("\nEnter from name :> ")
+	takeInput("\nEnter from name :> ")
 	fromName, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if fromName == "\n" {
-		fmt.Println("invalid input!")
+		errMsg("invalid input. Exiting Program...\n")
 		return
 	}
 	fmt.Println()
@@ -238,5 +239,5 @@ func Mailer() {
 	}
 	close(emailListChunks)
 	wg.Wait()
-	fmt.Println("\n\nall done.")
+	color.New(color.FgMagenta).Println("\n\nall done. Thanks for using the tool.")
 }

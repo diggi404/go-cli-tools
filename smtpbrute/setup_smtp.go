@@ -14,9 +14,9 @@ func ConnectSMTP(credentials []string, testEmail string) ([]string, error) {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", username)
 	mailer.SetHeader("To", testEmail)
-	mailer.SetHeader("Subject", fmt.Sprintf("SMTP test from %s", username))
-	// emailBody := fmt.Sprintf("SMTP Host: %s\nPort: %d\nUsername: %s\nPassword: %s", host, 587, username, password)
-	mailer.SetBody("text/plain", "Test message")
+	mailer.SetHeader("Subject", fmt.Sprintf("SMTP test from %s", host))
+	emailBody := fmt.Sprintf("%s,%d,%s,%s", host, 587, username, password)
+	mailer.SetBody("text/plain", emailBody)
 	err := dialer.DialAndSend(mailer)
 	if err != nil {
 		return nil, err

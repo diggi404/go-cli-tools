@@ -13,8 +13,8 @@ func FilterGmailCreds(creds string) ([]string, error) {
 	}
 	username := splitedCreds[0]
 	if strings.Contains(username, "@gmail.com") {
-		err := errors.New("domain is gmail")
-		return nil, err
+		splitedCreds = append(splitedCreds, "smtp.gmail.com")
+		return splitedCreds, nil
 	}
 	return splitedCreds, nil
 }

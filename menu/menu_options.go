@@ -33,11 +33,11 @@ func MenuSelection(selectedOption int) {
 	if selectedOption == 1 {
 		filePath, err := bulkips.GenIP()
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			color.New(color.FgRed).Printf("err: %v\n", err)
 			AfterGenIP("", "")
 		}
 		var input string
-		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
+		color.New(color.FgHiBlue).Print("Do you want to scan these IPs now? Y/n :> ")
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath)
 	} else if selectedOption == 2 {
@@ -50,8 +50,10 @@ func MenuSelection(selectedOption int) {
 		smtpbrute.BruteSmtp()
 	} else if selectedOption == 6 {
 		cpanelbrute.CpanelBrute()
+	} else {
+		color.New(color.FgRed).Println("Exiting Program...")
+		os.Exit(0)
 	}
-	os.Exit(0)
 }
 
 // AfterGenIP This function handles user selection right after generating bulk IPs.
@@ -63,17 +65,17 @@ func AfterGenIP(choice, filePath string) {
 	}
 	fmt.Print("\n")
 	var selectedOption int
-	fmt.Print("Enter a menu option :> ")
+	color.New(color.FgHiBlue).Print("Enter a menu option :> ")
 	fmt.Scanln(&selectedOption)
 	switch selectedOption {
 	case 1:
 		filePath, err := bulkips.GenIP()
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			color.New(color.FgRed).Printf("err: %v\n", err)
 			AfterGenIP("", "")
 		}
 		var input string
-		fmt.Print("Do you want to scan these IPs now? Y/n :> ")
+		color.New(color.FgHiBlue).Print("Do you want to scan these IPs now? Y/n :> ")
 		fmt.Scanln(&input)
 		AfterGenIP(input, filePath)
 	case 2:
@@ -87,6 +89,7 @@ func AfterGenIP(choice, filePath string) {
 	case 6:
 		cpanelbrute.CpanelBrute()
 	default:
+		color.New(color.FgRed).Println("Exiting Program...")
 		os.Exit(0)
 	}
 }

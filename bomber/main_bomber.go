@@ -31,40 +31,41 @@ type SmtpConnOpts struct {
 
 func Bomber() {
 	reader := bufio.NewReader(os.Stdin)
-
-	color.New(color.FgRed).Print("\nShould the default newsapi.org api key fail, kindly register a new account.\nGet a new api key from the dashboard and restart the tool using that.\n\n")
-	fmt.Print("Continue with a default newsapi.org api key? Y/n :> ")
+	takeInput := color.New(color.FgHiBlue).PrintFunc()
+	errMsg := color.New(color.FgRed).PrintfFunc()
+	errMsg("\nNOTE: Should the default newsapi.org api key fail, kindly register a new account.\nGet a new api key from the dashboard and restart the tool using that.\n\n")
+	takeInput("Continue with a default newsapi.org api key? Y/n :> ")
 	ChooseKey, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if ChooseKey == "\n" {
-		fmt.Println("Invalid choice!")
+		errMsg("Invalid choice. Exiting Program...\n")
 		return
 	}
 	trimmedChooseKey := strings.ToLower(strings.TrimSpace(ChooseKey))
 	var apiKey string
 	if !strings.Contains(trimmedChooseKey, "y") {
-		fmt.Print("\nEnter your api key :> ")
+		takeInput("\nEnter your api key :> ")
 		rawKey, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		} else if rawKey == "\n" {
-			fmt.Println("Empty key not accepted!")
+			errMsg("Empty key not accepted. Exiting Program...\n")
 			return
 		}
 		apiKey = strings.TrimSpace(rawKey)
 	}
 
 	var smtpCreds SmtpOpts
-	fmt.Print("\nwant to use a default SMTP provided by the tool? Y/n :> ")
+	takeInput("\nwant to use a default SMTP provided by the tool? Y/n :> ")
 	rawSmtpChoice, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if rawSmtpChoice == "\n" {
-		fmt.Println("invalid choice!")
+		errMsg("Invalid choice. Exiting Program...\n")
 		return
 	}
 
@@ -80,14 +81,14 @@ func Bomber() {
 		}
 	} else {
 		var filteredCreds []string
-		fmt.Println("\nEnter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD")
-		fmt.Print(">>> ")
+		takeInput("\nEnter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
+		takeInput(">>> ")
 		rawSmtpCreds, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		} else if rawSmtpCreds == "\n" {
-			fmt.Println("invalid input!")
+			errMsg("Invalid input. Exiting Program...\n")
 			return
 		}
 		splitedCreds := strings.Split(rawSmtpCreds, ",")
@@ -104,17 +105,17 @@ func Bomber() {
 		smtpCreds.Default = false
 	}
 
-	fmt.Println("\nverifying SMTP Credentials...")
+	takeInput("\nverifying SMTP Credentials...\n")
 	port, _ := strconv.Atoi(smtpCreds.Port)
 	dialer := gomail.NewDialer(smtpCreds.Host, port, smtpCreds.Username, smtpCreds.Password)
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	conn, err := dialer.Dial()
 	if err != nil {
 		if smtpCreds.Default {
-			color.New(color.FgRed).Println(err)
-			color.New(color.FgRed).Println("The default SMTP is dead. Restart the tool with yours.")
+			errMsg("err: %v\n", err)
+			errMsg("The default SMTP is dead. Restart the tool with yours.\n")
 		} else {
-			color.New(color.FgRed).Println(err)
+			errMsg("err: %v\n", err)
 		}
 		return
 	}
@@ -122,49 +123,49 @@ func Bomber() {
 	defer smtpConn.Conn.Close()
 	color.New(color.FgGreen).Printf("\nSMTP connection has been established.\n")
 
-	fmt.Print("\nis your target more than 1? Y/n :> ")
+	takeInput("\nis your target more than 1? Y/n :> ")
 	rawNumTarget, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if rawNumTarget == "\n" {
-		fmt.Println("invalid choice!")
+		errMsg("invalid choice. Exiting Program...\n")
 		return
 	}
 	numTarget := strings.ToLower(strings.TrimSpace(rawNumTarget))
 	var targetEmail string
 	var targetList []string
 	if strings.Contains(numTarget, "y") {
-		fmt.Println("\nSelect your target list: ")
+		takeInput("\nSelect your target list: \n")
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.txt"}, CaseFold: false},
 			})
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		}
 		targetList, err = fileutil.ReadFromFile(filePath)
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			errMsg("err: %v\n", err)
 			return
 		}
-		fmt.Printf("Total Target Emails: %d", len(targetList))
+		color.New(color.FgHiMagenta).Printf("\nTotal Target Emails: %d\n", len(targetList))
 	} else {
-		fmt.Print("\nEnter the email to bomb :> ")
+		takeInput("\nEnter the email to bomb :> ")
 		fmt.Scanln(&targetEmail)
 		if len(targetEmail) == 0 {
-			fmt.Println("invalid input!")
+			errMsg("invalid input. Exiting Program...\n")
 			return
 		}
 	}
-	fmt.Print("\nEnter number of emails to send :> ")
+	takeInput("\nEnter number of emails to send :> ")
 	numEmails, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	} else if numEmails == "\n" {
-		fmt.Println("invalid input!")
+		errMsg("invalid input. Exiting Program...\n")
 		return
 	}
 	numEmails = strings.TrimSpace(numEmails)
@@ -176,10 +177,10 @@ func Bomber() {
 
 	pgBar := MakePgBar(numBombs, "Bombing... ->")
 
-	fmt.Println("\nfetching news data...")
+	takeInput("\nfetching news data...\n")
 	body, err := GetMsgContent(apiKey)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
+		errMsg("err: %v\n", err)
 		return
 	}
 	var numValidArticles []int
@@ -191,8 +192,7 @@ func Bomber() {
 			}
 		}
 	} else {
-		fmt.Printf("body: %v\n", body)
-		color.New(color.FgRed).Println("The api has reached it's limit.\nKindly visit newsapi.org to register a new account.\nGet the api key from the dashboard and restart the tool with the given api key.")
+		errMsg("The api has reached it's limit.\nKindly visit newsapi.org to register a new account.\nGet the api key from the dashboard and restart the tool with the given api key.\n")
 		return
 	}
 	if len(targetList) == 0 {
@@ -241,7 +241,7 @@ func Bomber() {
 		close(workingChan)
 
 		wg.Wait()
-		fmt.Println("\n\nall done.")
+		color.New(color.FgMagenta).Println("\n\nall done. Thanks for using the tool.")
 	} else {
 		maxWorkers := 1000
 		chunkSize := len(targetList) / maxWorkers
@@ -288,7 +288,7 @@ func Bomber() {
 
 		wg.Wait()
 		close(articleChunks)
-		fmt.Println("\n\nall done.")
+		color.New(color.FgMagenta).Println("\n\nall done. Thanks for using the tool.")
 		os.Exit(0)
 	}
 

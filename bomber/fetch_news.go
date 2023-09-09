@@ -42,18 +42,15 @@ func GetMsgContent(apiKey string) (APIResponse, error) {
 	}
 	res, err := http.Get(apiUrl)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return APIResponse{}, err
 	}
 	bodyByte, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return APIResponse{}, err
 	}
 	var body APIResponse
 	err = json.Unmarshal(bodyByte, &body)
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return APIResponse{}, err
 	}
 	return body, nil
