@@ -27,6 +27,7 @@ func ScanIPs(filePath ...string) {
 	)
 	blue := color.New(color.FgHiBlue).PrintFunc()
 	red := color.New(color.FgRed).PrintfFunc()
+
 	// take and filter inputs.
 	reader := bufio.NewReader(os.Stdin)
 	blue("\nEnter the ports you want to scan separated by comma(,). example: 22,3389,2083\n")
@@ -54,7 +55,12 @@ func ScanIPs(filePath ...string) {
 
 	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
-		blue("\nSelect your file: \n")
+		blue("\nPress Enter to select your file: ")
+		_, err := reader.ReadString('\n')
+		if err != nil {
+			red("err: %v\n", err)
+			return
+		}
 		fileName, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.txt"}, CaseFold: false},

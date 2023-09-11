@@ -6,6 +6,7 @@ import (
 	"go_cli/bulkips"
 	"go_cli/checkers/cpanel"
 	"go_cli/checkers/smtp"
+	"go_cli/checkers/webmail"
 	"go_cli/mailer"
 	"go_cli/scanips"
 	"os"
@@ -50,6 +51,8 @@ func MenuSelection(selectedOption int) {
 		smtp.SMTPChecker()
 	} else if selectedOption == 6 {
 		cpanel.CPanelChecker()
+	} else if selectedOption == 7 {
+		webmail.WebMailChecker()
 	} else {
 		color.New(color.FgRed).Println("Exiting Program...")
 		os.Exit(0)
@@ -88,6 +91,8 @@ func AfterGenIP(choice, filePath string) {
 		smtp.SMTPChecker()
 	case 6:
 		cpanel.CPanelChecker()
+	case 7:
+		webmail.WebMailChecker()
 	default:
 		color.New(color.FgRed).Println("Exiting Program...")
 		os.Exit(0)

@@ -136,7 +136,13 @@ func Bomber() {
 	var targetEmail string
 	var targetList []string
 	if strings.Contains(numTarget, "y") {
-		blue("\nSelect your target list: \n")
+
+		blue("\nPress Enter to select your target list: ")
+		_, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return
+		}
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.txt"}, CaseFold: false},

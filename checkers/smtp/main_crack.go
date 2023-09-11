@@ -1,8 +1,10 @@
 package smtp
 
 import (
+	"bufio"
 	"fmt"
 	"go_cli/fileutil"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -12,22 +14,28 @@ import (
 )
 
 func SMTPChecker() {
-	takeInput := color.New(color.FgHiBlue).PrintFunc()
-	errMsg := color.New(color.FgRed).PrintfFunc()
+	blue := color.New(color.FgHiBlue).PrintFunc()
+	red := color.New(color.FgRed).PrintfFunc()
+	reader := bufio.NewReader(os.Stdin)
 	var testEmail string
-	takeInput("\nEnter test email :> ")
+	blue("\nEnter test email :> ")
 	fmt.Scanln(&testEmail)
 	if len(testEmail) == 0 {
-		errMsg("invalid input. Exiting Program...\n")
+		red("invalid input. Exiting Program...\n")
 		return
 	}
-	takeInput("\nSelect your wordlist: \n")
+	blue("\nPress Enter to select your wordlist: ")
+	_, err := reader.ReadString('\n')
+	if err != nil {
+		red("err: %v\n", err)
+		return
+	}
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
 		})
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 	}
 	wordList, _ := fileutil.ReadFromFile(filePath)
 	testEmail = strings.TrimSpace(testEmail)
@@ -49,7 +57,7 @@ func SMTPChecker() {
 	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
 	file, err := fileutil.WriteToFile("cracked_smtps", fileName)
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	}
 	defer file.Close()

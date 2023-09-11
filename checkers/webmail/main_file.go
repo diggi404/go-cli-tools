@@ -1,4 +1,4 @@
-package cpanel
+package webmail
 
 import (
 	"bufio"
@@ -12,11 +12,12 @@ import (
 	"github.com/ncruces/zenity"
 )
 
-func CPanelChecker() {
+func WebMailChecker() {
+	reader := bufio.NewReader(os.Stdin)
 	blue := color.New(color.FgHiBlue).PrintFunc()
 	red := color.New(color.FgRed).PrintfFunc()
-	reader := bufio.NewReader(os.Stdin)
-	red("\nYour wordlist should be in this format > https://example.com:2083|username|password\n")
+
+	red("\nYour wordlist should be in the format > email:password\n")
 	red("NOTE: Credentials with invalid format will be skipped or ignored automatically!\n")
 	blue("Press Enter to select your wordlist: ")
 	_, err := reader.ReadString('\n')
@@ -54,7 +55,7 @@ func CPanelChecker() {
 
 	currentTime := time.Now().Unix()
 	fileName := fmt.Sprintf("hits_%v.txt", currentTime)
-	file, err := fileutil.WriteToFile("cpanel_logs", fileName)
+	file, err := fileutil.WriteToFile("webmail_logs", fileName)
 	if err != nil {
 		red("err: %v\n", err)
 		return

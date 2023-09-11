@@ -99,7 +99,12 @@ func Mailer() {
 	color.New(color.FgGreen).Printf("\nSMTP connection established successfully :)\n")
 	mailOpts := MailOut{FromEmail: username}
 
-	blue("\nSelect your email list: \n")
+	blue("\nPress Enter to select your email list: ")
+	_, err = reader.ReadString('\n')
+	if err != nil {
+		red("err: %v\n", err)
+		return
+	}
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
@@ -127,7 +132,12 @@ func Mailer() {
 
 	if msgType == "html" || strings.Contains(msgType, "html") {
 
-		blue("\nSelect your html letter: \n")
+		blue("\nPress Enter to select your html letter: ")
+		_, err := reader.ReadString('\n')
+		if err != nil {
+			red("err: %v\n", err)
+			return
+		}
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.html"}, CaseFold: false},

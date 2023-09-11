@@ -31,7 +31,7 @@ func main() {
 
 	5. SMTP Checker					6. CPanel Checker
 
-	7. Exit
+	7. WebMail Checker				8. Exit
 
 	`
 	menu.SlowPrintMenu(menuOpts, time.Millisecond*50)
