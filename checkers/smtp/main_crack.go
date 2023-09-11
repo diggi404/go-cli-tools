@@ -1,4 +1,4 @@
-package smtpbrute
+package smtp
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/ncruces/zenity"
 )
 
-func BruteSmtp() {
+func SMTPChecker() {
 	takeInput := color.New(color.FgHiBlue).PrintFunc()
 	errMsg := color.New(color.FgRed).PrintfFunc()
 	var testEmail string

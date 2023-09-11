@@ -1,4 +1,4 @@
-package cpanelbrute
+package cpanel
 
 import "net"
 

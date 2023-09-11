@@ -1,4 +1,4 @@
-package cpanelbrute
+package cpanel
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func CpanelBrute() {
+func CPanelChecker() {
 	var target string
 	fmt.Println("\nEnter the CPanel Domain (example: https://website.com:2083/)")
 	fmt.Print(">>> ")
@@ -76,7 +76,7 @@ func CpanelBrute() {
 
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
-		go HandleBrute(trimedTarget, wordlistChunks, &wg, &mutex, table, file, &totalChecks)
+		go ProcessCreds(trimedTarget, wordlistChunks, &wg, &mutex, table, file, &totalChecks)
 	}
 
 	for i := 0; i < len(wordlist); i += chunkSize {

@@ -1,4 +1,4 @@
-package cpanelbrute
+package cpanel
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func HandleBrute(target string, wordlistChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, table *tablewriter.Table, file *os.File, totalChecks *int) {
+func ProcessCreds(target string, wordlistChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, table *tablewriter.Table, file *os.File, totalChecks *int) {
 	defer wg.Done()
 
 	credChunks := <-wordlistChunks

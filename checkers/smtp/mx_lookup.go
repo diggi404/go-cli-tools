@@ -1,4 +1,4 @@
-package smtpbrute
+package smtp
 
 import (
 	"errors"

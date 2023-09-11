@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"go_cli/bomber"
 	"go_cli/bulkips"
-	"go_cli/cpanelbrute"
+	"go_cli/checkers/cpanel"
+	"go_cli/checkers/smtp"
 	"go_cli/mailer"
 	"go_cli/scanips"
-	"go_cli/smtpbrute"
 	"os"
 	"strings"
 
@@ -47,9 +47,9 @@ func MenuSelection(selectedOption int) {
 	} else if selectedOption == 4 {
 		bomber.Bomber()
 	} else if selectedOption == 5 {
-		smtpbrute.BruteSmtp()
+		smtp.SMTPChecker()
 	} else if selectedOption == 6 {
-		cpanelbrute.CpanelBrute()
+		cpanel.CPanelChecker()
 	} else {
 		color.New(color.FgRed).Println("Exiting Program...")
 		os.Exit(0)
@@ -85,9 +85,9 @@ func AfterGenIP(choice, filePath string) {
 	case 4:
 		bomber.Bomber()
 	case 5:
-		smtpbrute.BruteSmtp()
+		smtp.SMTPChecker()
 	case 6:
-		cpanelbrute.CpanelBrute()
+		cpanel.CPanelChecker()
 	default:
 		color.New(color.FgRed).Println("Exiting Program...")
 		os.Exit(0)
