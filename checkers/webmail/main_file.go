@@ -19,7 +19,7 @@ func WebMailChecker() {
 
 	red("\nYour wordlist should be in the format > email:password\n")
 	red("NOTE: Credentials with invalid format will be skipped or ignored automatically!\n")
-	blue("Press Enter to select your wordlist: ")
+	blue("\nPress Enter to select your wordlist: ")
 	_, err := reader.ReadString('\n')
 	if err != nil {
 		red("err: %v\n", err)

@@ -18,7 +18,7 @@ func CPanelChecker() {
 	reader := bufio.NewReader(os.Stdin)
 	red("\nYour wordlist should be in this format > https://example.com:2083|username|password\n")
 	red("NOTE: Credentials with invalid format will be skipped or ignored automatically!\n")
-	blue("Press Enter to select your wordlist: ")
+	blue("\nPress Enter to select your wordlist: ")
 	_, err := reader.ReadString('\n')
 	if err != nil {
 		red("err: %v\n", err)
