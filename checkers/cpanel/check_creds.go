@@ -6,29 +6,32 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 )
 
-func ProcessCreds(target string, wordlistChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, table *tablewriter.Table, file *os.File, totalChecks *int) {
+func ProcessCreds(wordlistChunks <-chan []string, wg *sync.WaitGroup, mutex *sync.Mutex, file *os.File, totalChecks *int) {
 	defer wg.Done()
 
 	credChunks := <-wordlistChunks
 	for _, creds := range credChunks {
-		validCreds, err := MakeRequest(target, creds)
-		mutex.Lock()
+		filteredCreds, err := FilterCreds(creds)
 		if err == nil {
-			username, password, url := validCreds[0], validCreds[1], validCreds[2]
-			table.Append([]string{url, username, password})
-			table.Render()
-			result := fmt.Sprintf("%s => %s", target, creds)
-			file.WriteString(result)
-			os.Exit(0)
-		} else {
-			*totalChecks++
-			color.New(color.FgBlue).Printf("%d: -> ", *totalChecks)
-			color.New(color.FgRed).Printf("%s\n", creds)
+			result, err := MakeRequest(filteredCreds)
+			mutex.Lock()
+			if err == nil {
+				*totalChecks++
+				targetURL, username, password := result[0], result[1], result[2]
+				color.New(color.FgBlue).Printf("%d: -> ", *totalChecks)
+				color.New(color.FgGreen).Printf("%s|%s|%s -> SUCCESS\n", targetURL, username, password)
+				savedResult := fmt.Sprintf("%s|%s|%s\n", targetURL, username, password)
+				file.WriteString(savedResult)
+			} else {
+				*totalChecks++
+				color.New(color.FgBlue).Printf("%d: -> ", *totalChecks)
+				color.New(color.FgRed).Printf("%s -> FAILED!\n", creds)
+			}
+			mutex.Unlock()
 		}
-		mutex.Unlock()
+
 	}
 
 }

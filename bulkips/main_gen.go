@@ -14,15 +14,15 @@ import (
 // GenIP main function to generate the bulk IPs.
 func GenIP() (string, error) {
 	var ip1, ip2 string
-	takeInput := color.New(color.FgHiBlue).PrintFunc()
-	takeInput("\n\nEnter the starting IP: ")
+	blue := color.New(color.FgHiBlue).PrintFunc()
+	blue("\n\nEnter the starting IP: ")
 	fmt.Scanln(&ip1)
 	startIP := net.ParseIP(ip1).To4()
 	if startIP == nil {
 		err := errors.New("invalid IP address")
 		return "", err
 	}
-	takeInput("\nEnter the ending IP: ")
+	blue("\nEnter the ending IP: ")
 	fmt.Scanln(&ip2)
 	endIP := net.ParseIP(ip2).To4()
 	if endIP == nil {

@@ -25,21 +25,21 @@ func ScanIPs(filePath ...string) {
 		filteredPorts []string
 		timeout       int
 	)
-	takeInput := color.New(color.FgHiBlue).PrintFunc()
-	errMsg := color.New(color.FgRed).PrintfFunc()
+	blue := color.New(color.FgHiBlue).PrintFunc()
+	red := color.New(color.FgRed).PrintfFunc()
 	// take and filter inputs.
 	reader := bufio.NewReader(os.Stdin)
-	takeInput("\nEnter the ports you want to scan separated by comma(,). example: 22,3389,2083\n")
-	takeInput(">>>> ")
+	blue("\nEnter the ports you want to scan separated by comma(,). example: 22,3389,2083\n")
+	blue(">>>> ")
 	userPort, err := reader.ReadString('\n')
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	} else if userPort == "\n" {
-		errMsg("invalid input. Exiting Program...\n")
+		red("invalid input. Exiting Program...\n")
 		return
 	}
-	takeInput("\nEnter the timeout in seconds (Default = 10s) :> ")
+	blue("\nEnter the timeout in seconds (Default = 10s) :> ")
 	fmt.Scanln(&timeout)
 
 	// filter all entered ports
@@ -54,13 +54,13 @@ func ScanIPs(filePath ...string) {
 
 	// handles direct selection from Main Menu
 	if len(filePath) == 0 {
-		takeInput("\nSelect your file: \n")
+		blue("\nSelect your file: \n")
 		fileName, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.txt"}, CaseFold: false},
 			})
 		if err != nil {
-			errMsg("err: %v\n", err)
+			red("err: %v\n", err)
 			return
 		}
 		filePath = append(filePath, fileName)
@@ -69,13 +69,12 @@ func ScanIPs(filePath ...string) {
 	// continuation for both selection from main menu and after generating bulk ips
 	ips, err := fileutil.ReadFromFile(filePath[0])
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	}
 	color.New(color.FgHiMagenta).Printf("\nTotal IPs: %v\n", len(ips))
-	red := color.New(color.FgRed).PrintlnFunc()
-	red("\nIP Address\tOpen Ports\tService")
-	red("----------------------------------------------------------------------------------")
+	red("\nIP Address\tOpen Ports\tService\n")
+	red("----------------------------------------------------------------------------------\n")
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -89,7 +88,7 @@ func ScanIPs(filePath ...string) {
 	for _, port := range filteredPorts {
 		file, err := fileutil.WriteToFile(dirName, port+".txt")
 		if err != nil {
-			errMsg("err: %v\n", err)
+			red("err: %v\n", err)
 			return
 		}
 		files = append(files, file)

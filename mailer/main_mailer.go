@@ -54,17 +54,17 @@ func Mailer() {
 	var (
 		filteredCreds []string
 	)
-	takeInput := color.New(color.FgHiBlue).PrintFunc()
-	errMsg := color.New(color.FgRed).PrintfFunc()
+	blue := color.New(color.FgHiBlue).PrintFunc()
+	red := color.New(color.FgRed).PrintfFunc()
 	reader := bufio.NewReader(os.Stdin)
-	takeInput("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
-	takeInput(">>> ")
+	blue("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
+	blue(">>> ")
 	smtpCredsStr, err := reader.ReadString('\n')
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	} else if smtpCredsStr == "\n" {
-		errMsg("invalid input. Exiting Program...\n")
+		red("invalid input. Exiting Program...\n")
 		return
 	}
 	splittedCreds := strings.Split(smtpCredsStr, ",")
@@ -76,7 +76,7 @@ func Mailer() {
 		}
 	}
 
-	takeInput("\nverifying SMTP credentials...\n")
+	blue("\nverifying SMTP credentials...\n")
 
 	host, portStr, username, password := filteredCreds[0], filteredCreds[1], filteredCreds[2], filteredCreds[3]
 	port, _ := strconv.Atoi(portStr)
@@ -84,7 +84,7 @@ func Mailer() {
 	dailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	conn, err := dailer.Dial()
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	}
 	smtpCreds := SmtpOpts{
@@ -99,48 +99,48 @@ func Mailer() {
 	color.New(color.FgGreen).Printf("\nSMTP connection established successfully :)\n")
 	mailOpts := MailOut{FromEmail: username}
 
-	takeInput("\nSelect your email list: \n")
+	blue("\nSelect your email list: \n")
 	filePath, err := zenity.SelectFile(
 		zenity.FileFilters{
 			{Patterns: []string{"*.txt"}, CaseFold: false},
 		})
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	}
 
 	emailList, err := fileutil.ReadFromFile(filePath)
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	}
 	color.New(color.FgHiMagenta).Printf("\nTotal Emails: %v\n", len(emailList))
 
 	var rawMsgType string
-	takeInput("\nWhat type of content are you sending? plain/html :> ")
+	blue("\nWhat type of content are you sending? plain/html :> ")
 	fmt.Scanln(&rawMsgType)
 	if len(rawMsgType) == 0 {
-		errMsg("invalid choice. Exiting Program...\n")
+		red("invalid choice. Exiting Program...\n")
 		return
 	}
 	msgType := strings.ToLower(strings.TrimSpace(rawMsgType))
 
 	if msgType == "html" || strings.Contains(msgType, "html") {
 
-		takeInput("\nSelect your html letter: \n")
+		blue("\nSelect your html letter: \n")
 		filePath, err := zenity.SelectFile(
 			zenity.FileFilters{
 				{Patterns: []string{"*.html"}, CaseFold: false},
 			})
 		if err != nil {
-			errMsg("err: %v\n", err)
+			red("err: %v\n", err)
 			return
 		}
 
 		htmlByte, err := os.ReadFile(filePath)
 
 		if err != nil {
-			errMsg("err: %v\n", err)
+			red("err: %v\n", err)
 			return
 		}
 
@@ -148,37 +148,37 @@ func Mailer() {
 		mailOpts.IsMsgPlain = false
 	} else {
 
-		takeInput("\nEnter your Message :> ")
+		blue("\nEnter your Message :> ")
 		msg, err := reader.ReadString('\n')
 		if err != nil {
-			errMsg("err: %v\n", err)
+			red("err: %v\n", err)
 			return
 		} else if msg == "\n" {
-			errMsg("invalid input. Exiting Program...\n")
+			red("invalid input. Exiting Program...\n")
 			return
 		}
 		mailOpts.Message = msg
 		mailOpts.IsMsgPlain = true
 	}
 
-	takeInput("\nEnter Message Subject :> ")
+	blue("\nEnter Message Subject :> ")
 	msgSubject, err := reader.ReadString('\n')
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	} else if msgSubject == "\n" {
-		errMsg("invalid input. Exiting Program...\n")
+		red("invalid input. Exiting Program...\n")
 		return
 	}
 	mailOpts.Subject = strings.TrimSpace(msgSubject)
 
-	takeInput("\nEnter from name :> ")
+	blue("\nEnter from name :> ")
 	fromName, err := reader.ReadString('\n')
 	if err != nil {
-		errMsg("err: %v\n", err)
+		red("err: %v\n", err)
 		return
 	} else if fromName == "\n" {
-		errMsg("invalid input. Exiting Program...\n")
+		red("invalid input. Exiting Program...\n")
 		return
 	}
 	fmt.Println()
