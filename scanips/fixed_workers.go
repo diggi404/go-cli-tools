@@ -19,6 +19,7 @@ func CheckPorts2(ipChunks <-chan []string, ports []string, mutex *sync.Mutex, wg
 
 	// get pushed data to channel at a go.
 	ipsChunk := <-ipChunks
+
 	for _, ip := range ipsChunk {
 		var openPorts []string
 		var portServices []string

@@ -57,6 +57,7 @@ func Mailer() {
 	blue := color.New(color.FgHiBlue).PrintFunc()
 	red := color.New(color.FgRed).PrintfFunc()
 	reader := bufio.NewReader(os.Stdin)
+
 	blue("Enter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
 	blue(">>> ")
 	smtpCredsStr, err := reader.ReadString('\n')

@@ -36,7 +36,6 @@ func main() {
 	`
 	menu.SlowPrintMenu(menuOpts, time.Millisecond*50)
 	var choiceStr string
-	// fmt.Print()
 	color.New(color.FgHiBlue).Print("\n\nEnter your option :> ")
 	fmt.Scanln(&choiceStr)
 	choice, err := strconv.Atoi(choiceStr)
