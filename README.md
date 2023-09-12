@@ -1,4 +1,6 @@
-# NETBLASTER SUITE
+<div align="center">
+  <h1>NETBLASTER SUITE</h1>
+</div>
 
 ![Menu Options](main_page.png)
 
