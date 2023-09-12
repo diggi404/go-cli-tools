@@ -3,8 +3,11 @@ package bomber
 import (
 	"bufio"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"go_cli/fileutil"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -16,10 +19,10 @@ import (
 )
 
 type SmtpOpts struct {
-	Host     string
-	Port     string
-	Username string
-	Password string
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 	Default  bool
 }
 
@@ -72,13 +75,34 @@ func Bomber() {
 	trimmedSmtpChoice := strings.ToLower(strings.TrimSpace(rawSmtpChoice))
 
 	if strings.Contains(trimmedSmtpChoice, "y") {
-		smtpCreds = SmtpOpts{
-			Host:     os.Getenv("SMTP_HOST"),
-			Port:     os.Getenv("SMTP_PORT"),
-			Username: os.Getenv("SMTP_USERNAME"),
-			Password: os.Getenv("SMTP_PASSWORD"),
-			Default:  true,
+		blue("\nFetching SMTP credentials...\n")
+		res, err := http.Get("https://netblast-suite.azurewebsites.net/smtp")
+		if err != nil {
+			red("err: %v\n", err)
+			return
 		}
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			red("err: %v\n", err)
+			return
+		}
+		defer res.Body.Close()
+		if res.StatusCode == 429 {
+			red("err: You are abusing the default SMTP api. Kindly restart the tool with yours.\n")
+			return
+		} else if res.StatusCode == 200 {
+			json.Unmarshal(body, &smtpCreds)
+			smtpCreds.Default = true
+			color.New(color.FgGreen).Printf("\nDefault SMTP fetched successfully.\n")
+		}
+
+		// smtpCreds = SmtpOpts{
+		// 	Host:     os.Getenv("SMTP_HOST"),
+		// 	Port:     os.Getenv("SMTP_PORT"),
+		// 	Username: os.Getenv("SMTP_USERNAME"),
+		// 	Password: os.Getenv("SMTP_PASSWORD"),
+		// 	Default:  true,
+		// }
 	} else {
 		var filteredCreds []string
 		blue("\nEnter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
