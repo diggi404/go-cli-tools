@@ -21,9 +21,13 @@
 
   > This takes a list of email address and sends a customized message to each. Message could either be plain or an html newsletter.
 
+  > Implemented a workaround for gmail accounts to handle single connection limiting issues. This will also help prevent your account from getting banned or blocked. Daily limit still applies and the tool will terminated if detected.
+
 - Email Bomber
 
   > Sends a number of emails to a single or multiple targets. The tool uses news content from newsapi.org so messages are dynamic.
+
+  > Implemented a workaround for gmail accounts to handle single connection limiting issues. This will also help prevent your account from getting banned or blocked. Daily limit still applies and the tool will terminated if detected.
 
 - SMTP Checker
 
