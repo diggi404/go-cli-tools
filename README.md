@@ -31,7 +31,7 @@
 
 - SMTP Checker
 
-  > This takes a mail access combolist and checks for valid SMTP credentials. Valid credentials will be saved to a file.
+  > This takes a mail access combolist and checks for valid SMTP credentials. A test email address has to be given by the user to send all valid SMTP credentials. This helps filter SMTPs with higher inbox rate.
 
 - CPanel Checker
 
