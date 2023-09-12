@@ -96,13 +96,6 @@ func Bomber() {
 			color.New(color.FgGreen).Printf("\nDefault SMTP fetched successfully.\n")
 		}
 
-		// smtpCreds = SmtpOpts{
-		// 	Host:     os.Getenv("SMTP_HOST"),
-		// 	Port:     os.Getenv("SMTP_PORT"),
-		// 	Username: os.Getenv("SMTP_USERNAME"),
-		// 	Password: os.Getenv("SMTP_PASSWORD"),
-		// 	Default:  true,
-		// }
 	} else {
 		var filteredCreds []string
 		blue("\nEnter your SMTP Credentials. Format >  HOST,PORT,USERNAME,PASSWORD\n")
