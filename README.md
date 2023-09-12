@@ -4,7 +4,8 @@
 
 ![Menu Options](main_page.png)
 
-**NOTE: I won't be held responsible for any wrongful use of this tool. It was made solely for educational purpose only.**
+> **note**
+> I won't be held responsible for any wrongful use of this tool. It was made solely for educational purpose only.
 
 ### Menu Options
 
