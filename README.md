@@ -2,7 +2,7 @@
   <h1>NETBLAST SUITE</h1>
 </div>
 
-![Menu Options](main_page.png)
+![Menu Options](main_menu.png)
 
 > **note**
 > I won't be held responsible for any wrongful use of this tool. It was made solely for educational purpose only.
