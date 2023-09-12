@@ -5,7 +5,7 @@
 ![Menu Options](main_menu.png)
 
 > **note**
-> I won't be held responsible for any wrongful use of this tool. It was made solely for educational purpose only.
+> I won't be held responsible for any wrongful use of this tool. It was made for educational purpose only.
 
 ### Menu Options
 
