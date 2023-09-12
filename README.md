@@ -1,8 +1,8 @@
-# NETBLASTER SUITE
+                # NETBLASTER SUITE
 
 ![Menu Options](main_page.png)
 
-<span style="color:red">NOTE: I won't be responsible for any wrongful use of this tool. It was made solely for educational purpose only.</span>
+**NOTE: I won't be responsible for any wrongful use of this tool. It was made solely for educational purpose only.**
 
 ### Menu Options
 
