@@ -2,6 +2,7 @@ package webmail
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -18,6 +19,8 @@ func MakeRequest(creds []string) ([]string, error) {
 	}
 	if res.StatusCode == 200 {
 		return creds, nil
+	} else {
+		err := errors.New("invalid credentials")
+		return nil, err
 	}
-	return nil, err
 }

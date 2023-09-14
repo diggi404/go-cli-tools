@@ -13,6 +13,10 @@ func ReformCreds(creds string) ([]string, error) {
 		return nil, err
 	}
 	domain := strings.Split(splittedCreds[0], "@")
+	if len(domain) != 2 {
+		err := errors.New("invalid credentials format")
+		return nil, err
+	}
 	targetURL := fmt.Sprintf("https://%s:2096", domain[1])
 	splittedCreds = append(splittedCreds, targetURL)
 	return splittedCreds, nil
